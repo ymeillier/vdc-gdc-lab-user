@@ -24,8 +24,7 @@ The purpose of this project was 3-fold:
 
 
 
-
-
+## Project Content
 
 The below tree structure provides a navigation map to the content of the repo:
 
@@ -133,12 +132,21 @@ vdc-lab-user-vdc-tmp/
 
 ```
 
+## Copyright
+
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+
+
+
+## Lab Guides
+
 The advanced/deep-dive lab guide is located at [GDC-Lab-Guide/LabGuide.md](https://gitlab.com/ymeillier/vdc-lab-user/-/blob/main/GDC-Lab-Guide/LabGuide.md).
 
 Below is a fast track version of the lab guide that covers the key steps required to deploy the lab without getting into the details provided by the advanced lab guide
 
+# Accelerated Lab Deployment Guide
 
-## Pre-Req
+## Pre-Requisites
 
 You need to reach out to Yannick Meillier (meillier@) for your user account and google workspace ID to be whitelisted.
 
