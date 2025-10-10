@@ -1,0 +1,14 @@
+# Check if the marker file exists
+if (Test-Path -Path "C:\Windows\Temp\startup_script_completed.txt") {
+  Write-Host "Startup script already executed. Exiting."
+  exit
+}
+
+# Set the new password for the "admin" user (INSECURE - DO NOT USE IN PRODUCTION)
+$newPassword = ConvertTo-SecureString "${admin_password}" -AsPlainText -Force
+Set-LocalUser -Name "admin" -Password $newPassword
+
+# Create the marker file
+New-Item -ItemType File -Path "C:\Windows\Temp\startup_script_completed.txt" -Force
+
+Write-Host "Password for user 'admin' has been updated."

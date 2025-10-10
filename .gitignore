@@ -1,0 +1,34 @@
+#pnet main.tf assets to ignore:
+.terraform
+.DS_Store
+./assets-jump-host/crd-auth-command.txt
+./assets-jump-host/crd-sysprep-script.ps1
+.billing_id
+.gcp_region
+.gcp_zone
+secret.auto.tfvars
+.terraform.lock.hcl
+.terraform.tfstate.lock.info
+terraform.tfstate
+terraform.tfstate.backup
+GDC-Lab-Guide/.obsidian
+vdc-project.txt
+
+# gdc-gcp-project/tf/ assets to ignore:
+gdc-gcp-project/tf/SA-keys
+gdc-gcp-project/tf/.terraform
+gdc-gcp-project/tf/.terraform.lock.hcl
+gdc-gcp-project/tf/terraform.tfstate
+gdc-gcp-project/tf/terraform.tfstate.backup
+
+
+# servers/tf/ assets to ignore: 
+servers/tf/generated-scripts/
+servers/.terraform
+servers/tf/.terraform.lock.hcl
+servers/tf/terraform.tfstate
+servers/tf/terraform.tfstate.backup
+servers/ref-bash-scripts/
+
+# Service Account Keys
+.keys/

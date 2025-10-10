@@ -1,0 +1,89 @@
+How to install PNETLab on GCP
+
+1. Open cloud console in GCP once you are in the CLI, run below command depending on the PNETLab version you want to install.
+
+- PNETLab version 5 (Ubuntu 18.04):
+gcloud compute images create nested-ubuntu-bionic --source-image-family=ubuntu-1804-lts --source-image-project=ubuntu-os-cloud --licenses https://www.googleapis.com/compute/v1/projects/vm-options/global/licenses/enable-vmx
+
+- PNETLab version 6 (Ubuntu 20.04):
+gcloud compute images create nested-ubuntu-focal --source-image-family=ubuntu-2004-lts --source-image-project=ubuntu-os-cloud --licenses https://www.googleapis.com/compute/v1/projects/vm-options/global/licenses/enable-vmx
+
+2. Create a VM instance with the specs you want.
+
+Recommendations:
+CPU: Intel CPUs Skylake or Cascade
+Disk: SSD for better performance
+
+- For the boot disk, select the nested image that you created in step 1
+- Allow HTTP and HTTPS traffic
+- "Deploy a container image” must be UNCHECKED
+- After the VM is created, ssh to it and   switch to the root user:
+sudo -i
+
+3. Run the installation script for the corresponding PNETLab version: check the installation instructions for each version by issuing the command /notes in PNETLab's group.
+
+Once installation is completed reboot the VM with this command:
+reboot
+
+Wait for few seconds while the VM reboots and ssh to it again.
+
+When the setup wizard screen appears, press ctrl + c and type the below command to switch to the root user:
+sudo -i
+
+You'll get setup wizard again. When it asks you to enter your new root password, enter it twice, give a hostname of choice, domain name of choice, and select DHCP (don't use static ip ), and leave NTP blank.
+
+And that's it. Enjoy PNETLab! 
+
+
+
+
+
+
+
+----- v5_stable installation notes
+PNETLab version 5 installation/upgrade instructions
+https://pnetlab.com/pages/documentation?slug=install-bare-metal
+
+
+After installing PNETLab version 4.2.10 as base, run the following command:
+
+
+yannick note: reset etc/resolv.conf to 8.8.8.8 with:
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
+
+curl -sL 'https://labhub.eu.org/api/raw/?path=/UNETLAB%20I/upgrades_pnetlab/bionic/install_pnetlab_latest_v5.sh' | sh
+
+After the installation is completed, reboot your VM. 
+
+
+
+
+
+------ v6 
+📀 Installation instructions - PNetLab v6 BETA release
+⚠️ Read the full instructions and important notes before starting the process. After you finish reading them, follow the process step by step.
+
+Step 1
+Download the Ubuntu Server 20.04 ISO and install the OS on a VM or bare metal.
+
+Step 2
+Run the installation script as root (copy-paste the full thing):
+curl -sL https://labhub.eu.org/api/raw/?path=/UNETLAB%20I/upgrades_pnetlab/Focal/install_pnetlab_v6.sh | bash
+
+After the installation script finishes running, reboot the server.
+
+
+ℹ️ Important notes
+- Make sure to enable Virtualization on your system BIOS and make sure your hardware supports nested virtualization.
+
+Check if you meet the requirements by running:
+grep -cw vmx /proc/cpuinfo
+
+Check if KVM was installed correctly after the installation script finishes running:
+kvm-ok
+
+- When installed on GCP, skip the setup wizard by pressing CTRL + C after the first reboot and if you're tired of having to do that at every login, ask how to disable in this chat.
+
+⚠️ Remember this version is still on beta so you might encounter bugs and unfinished features. 
+

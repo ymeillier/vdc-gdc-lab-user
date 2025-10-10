@@ -1,0 +1,318 @@
+set firewall send-redirects 'disable'
+
+set interfaces ethernet eth0 mtu '8896'
+set interfaces ethernet eth0 address '10.10.15.108/24'
+set interfaces ethernet eth0 vrf 'oob'
+
+set interfaces ethernet eth1 mtu '8846'
+
+set interfaces ethernet eth2 mtu '8846'
+set interfaces ethernet eth2 address '5.0.3.2/30'
+set interfaces ethernet eth2 ipv6 address
+set interfaces ethernet eth2 address 'fd:0:0:503::2222/64'
+
+set interfaces ethernet eth3 mtu '8846'
+set interfaces ethernet eth3 address '6.0.3.2/30'
+set interfaces ethernet eth3 ipv6 address
+set interfaces ethernet eth3 address 'fd:0:0:603::2222/64'
+
+set interfaces ethernet eth4 mtu '8846'
+
+set interfaces ethernet eth5 mtu '8846'
+set interfaces ethernet eth5 disable
+
+set interfaces loopback lo address '10.0.10.1/32'
+set interfaces loopback lo address 'fd:0:0:10::1111/64'
+
+set interfaces bridge br111 mtu '8846'
+set interfaces bridge br111 address '10.110.100.2/24'
+set interfaces bridge br111 member interface eth1
+set interfaces bridge br111 member interface eth4
+
+set high-availability vrrp group gw-100 address 10.110.100.1/24
+set high-availability vrrp group gw-100 advertise-interval '1'
+set high-availability vrrp group gw-100 disable
+set high-availability vrrp group gw-100 interface 'br111'
+set high-availability vrrp group gw-100 no-preempt
+set high-availability vrrp group gw-100 priority '100'
+set high-availability vrrp group gw-100 vrid '100'
+
+set high-availability vrrp group gw-101 address 10.110.101.1/24
+set high-availability vrrp group gw-101 advertise-interval '1'
+set high-availability vrrp group gw-101 interface 'br111'
+set high-availability vrrp group gw-101 no-preempt
+set high-availability vrrp group gw-101 priority '100'
+set high-availability vrrp group gw-101 vrid '101'
+
+set high-availability vrrp group gw-102 address 10.110.102.1/24
+set high-availability vrrp group gw-102 advertise-interval '1'
+set high-availability vrrp group gw-102 interface 'br111'
+set high-availability vrrp group gw-102 no-preempt
+set high-availability vrrp group gw-102 priority '100'
+set high-availability vrrp group gw-102 vrid '102'
+
+set high-availability vrrp group gw-103 address 10.110.103.1/24
+set high-availability vrrp group gw-103 advertise-interval '1'
+set high-availability vrrp group gw-103 interface 'br111'
+set high-availability vrrp group gw-103 no-preempt
+set high-availability vrrp group gw-103 priority '100'
+set high-availability vrrp group gw-103 vrid '103'
+
+set high-availability vrrp group gw-104 address 10.110.104.1/24
+set high-availability vrrp group gw-104 advertise-interval '1'
+set high-availability vrrp group gw-104 interface 'br111'
+set high-availability vrrp group gw-104 no-preempt
+set high-availability vrrp group gw-104 priority '100'
+set high-availability vrrp group gw-104 vrid '104'
+
+set high-availability vrrp group gw-105 address 10.110.105.1/24
+set high-availability vrrp group gw-105 advertise-interval '1'
+set high-availability vrrp group gw-105 interface 'br111'
+set high-availability vrrp group gw-105 no-preempt
+set high-availability vrrp group gw-105 priority '100'
+set high-availability vrrp group gw-105 vrid '105'
+
+set high-availability vrrp group gw-105-v6 address fd:0:110:105::1111/64
+set high-availability vrrp group gw-105-v6 advertise-interval '1'
+set high-availability vrrp group gw-105-v6 interface 'br111'
+set high-availability vrrp group gw-105-v6 no-preempt
+set high-availability vrrp group gw-105-v6 priority '100'
+set high-availability vrrp group gw-105-v6 vrid '056'
+
+set high-availability vrrp group gw-106 address 10.110.106.1/24
+set high-availability vrrp group gw-106 advertise-interval '1'
+set high-availability vrrp group gw-106 interface 'br111'
+set high-availability vrrp group gw-106 no-preempt
+set high-availability vrrp group gw-106 priority '100'
+set high-availability vrrp group gw-106 vrid '106'
+
+set high-availability vrrp group gw-106-v6 address fd:0:110:106::1111/64
+set high-availability vrrp group gw-106-v6 advertise-interval '1'
+set high-availability vrrp group gw-106-v6 interface 'br111'
+set high-availability vrrp group gw-106-v6 no-preempt
+set high-availability vrrp group gw-106-v6 priority '100'
+set high-availability vrrp group gw-106-v6 vrid '066'
+
+set high-availability vrrp group gw-107 address 10.110.107.1/24
+set high-availability vrrp group gw-107 advertise-interval '1'
+set high-availability vrrp group gw-107 interface 'br111'
+set high-availability vrrp group gw-107 no-preempt
+set high-availability vrrp group gw-107 priority '100'
+set high-availability vrrp group gw-107 vrid '107'
+
+set high-availability vrrp group gw4 address 10.110.4.1/24
+set high-availability vrrp group gw4 advertise-interval '1'
+set high-availability vrrp group gw4 disable
+set high-availability vrrp group gw4 interface 'br111'
+set high-availability vrrp group gw4 no-preempt
+set high-availability vrrp group gw4 priority '100'
+set high-availability vrrp group gw4 vrid '4'
+
+set policy prefix-list leaf-in rule 1 action 'deny'
+set policy prefix-list leaf-in rule 1 ge '16'
+set policy prefix-list leaf-in rule 1 prefix '1.0.0.0/16'
+
+set policy prefix-list leaf-in rule 2 action 'deny'
+set policy prefix-list leaf-in rule 2 ge '16'
+set policy prefix-list leaf-in rule 2 prefix '2.0.0.0/16'
+
+set policy prefix-list leaf-in rule 3 action 'deny'
+set policy prefix-list leaf-in rule 3 ge '16'
+set policy prefix-list leaf-in rule 3 prefix '3.0.0.0/16'
+
+set policy prefix-list leaf-in rule 4 action 'deny'
+set policy prefix-list leaf-in rule 4 ge '16'
+set policy prefix-list leaf-in rule 4 prefix '4.0.0.0/16'
+
+set policy prefix-list leaf-in rule 5 action 'deny'
+set policy prefix-list leaf-in rule 5 ge '16'
+set policy prefix-list leaf-in rule 5 prefix '5.0.0.0/16'
+
+set policy prefix-list leaf-in rule 6 action 'deny'
+set policy prefix-list leaf-in rule 6 ge '16'
+set policy prefix-list leaf-in rule 6 prefix '6.0.0.0/16'
+
+set policy prefix-list leaf-in rule 10 action 'deny'
+set policy prefix-list leaf-in rule 10 prefix '10.15.0.0/16'
+
+set policy prefix-list leaf-in rule 11 action 'permit'
+set policy prefix-list leaf-in rule 11 ge '24'
+set policy prefix-list leaf-in rule 11 prefix '10.0.140.0/24'
+
+set policy prefix-list leaf-in rule 12 action 'deny'
+set policy prefix-list leaf-in rule 12 ge '16'
+set policy prefix-list leaf-in rule 12 prefix '10.0.0.0/16'
+
+set policy prefix-list leaf-in rule 99 action 'deny'
+set policy prefix-list leaf-in rule 99 ge '16'
+set policy prefix-list leaf-in rule 99 prefix '10.99.0.0/16'
+
+set policy prefix-list leaf-in rule 100 action 'deny'
+set policy prefix-list leaf-in rule 100 ge '16'
+set policy prefix-list leaf-in rule 100 prefix '10.100.0.0/16'
+
+set policy prefix-list leaf-in rule 110 action 'deny'
+set policy prefix-list leaf-in rule 110 ge '16'
+set policy prefix-list leaf-in rule 110 prefix '10.110.0.0/16'
+
+set policy prefix-list leaf-in rule 120 action 'deny'
+set policy prefix-list leaf-in rule 120 ge '16'
+set policy prefix-list leaf-in rule 120 prefix '10.120.0.0/16'
+
+set policy prefix-list leaf-in rule 130 action 'deny'
+set policy prefix-list leaf-in rule 130 ge '16'
+set policy prefix-list leaf-in rule 130 prefix '10.130.0.0/16'
+
+set policy prefix-list leaf-in rule 192 action 'permit'
+set policy prefix-list leaf-in rule 192 description 'flat ipv4 with bgp'
+set policy prefix-list leaf-in rule 192 ge '8'
+set policy prefix-list leaf-in rule 192 prefix '192.0.0.0/8'
+
+set policy prefix-list leaf-in rule 200 action 'permit'
+set policy prefix-list leaf-in rule 200 prefix '0.0.0.0/0'
+
+set policy prefix-list leaf-in rule 210 action 'permit'
+set policy prefix-list leaf-in rule 210 description 'vips abm cluster'
+set policy prefix-list leaf-in rule 210 ge '16'
+set policy prefix-list leaf-in rule 210 prefix '10.210.0.0/16'
+
+set policy prefix-list leaf-in rule 211 action 'permit'
+set policy prefix-list leaf-in rule 211 description 'vips abm cluster'
+set policy prefix-list leaf-in rule 211 ge '16'
+set policy prefix-list leaf-in rule 211 prefix '10.211.0.0/16'
+
+set policy prefix-list leaf-in rule 212 action 'permit'
+set policy prefix-list leaf-in rule 212 description 'vips abm cluster'
+set policy prefix-list leaf-in rule 212 ge '16'
+set policy prefix-list leaf-in rule 212 prefix '10.212.0.0/16'
+
+set policy prefix-list leaf-in rule 213 action 'permit'
+set policy prefix-list leaf-in rule 213 description 'vips abm cluster'
+set policy prefix-list leaf-in rule 213 ge '16'
+set policy prefix-list leaf-in rule 213 prefix '10.213.0.0/16'
+
+set policy prefix-list leaf-in rule 214 action 'permit'
+set policy prefix-list leaf-in rule 214 description 'vips abm cluster'
+set policy prefix-list leaf-in rule 214 ge '16'
+set policy prefix-list leaf-in rule 214 prefix '10.214.0.0/16'
+
+set policy prefix-list leaf-in rule 215 action 'permit'
+set policy prefix-list leaf-in rule 215 description 'vips abm cluster'
+set policy prefix-list leaf-in rule 215 ge '16'
+set policy prefix-list leaf-in rule 215 prefix '10.215.0.0/16'
+
+set policy prefix-list6 route-redist-filtering6 rule 620 action 'permit'
+set policy prefix-list6 route-redist-filtering6 rule 620 ge '48'
+set policy prefix-list6 route-redist-filtering6 rule 620 prefix 'fd::/48'
+
+set protocols bgp address-family ipv4-unicast redistribute connected
+set protocols bgp address-family ipv4-unicast redistribute static
+
+set protocols bgp address-family ipv6-unicast network fd:0::/32
+set protocols bgp address-family ipv6-unicast redistribute connected
+set protocols bgp address-family ipv6-unicast redistribute static
+
+set protocols bgp listen range 10.100.101.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.102.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.103.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.104.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.105.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.106.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.107.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.108.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.109.0/24 peer-group 'dyn-peers-r0'
+
+set protocols bgp listen range 10.110.101.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.102.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.103.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.104.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.105.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.106.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.107.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.108.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.109.0/24 peer-group 'dyn-peers-r1'
+
+set protocols bgp listen range 10.120.101.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.102.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.103.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.104.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.105.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.106.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.107.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.108.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.109.0/24 peer-group 'dyn-peers-r2'
+
+set protocols bgp listen range 10.130.101.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.102.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.103.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.104.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.105.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.106.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.107.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.108.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.109.0/24 peer-group 'dyn-peers-r3'
+
+set protocols bgp neighbor 5.0.3.1 address-family ipv4-unicast prefix-list import 'leaf-in'
+set protocols bgp neighbor 5.0.3.1 remote-as '65003'
+set protocols bgp neighbor 5.0.3.1 solo
+set protocols bgp neighbor 5.0.3.1 timers holdtime '9'
+set protocols bgp neighbor 5.0.3.1 timers keepalive '3'
+set protocols bgp neighbor 5.0.3.1 update-source '5.0.3.2'
+
+set protocols bgp neighbor 6.0.3.1 address-family ipv4-unicast prefix-list import 'leaf-in'
+set protocols bgp neighbor 6.0.3.1 address-family ipv4-unicast soft-reconfiguration
+set protocols bgp neighbor 6.0.3.1 remote-as '65003'
+set protocols bgp neighbor 6.0.3.1 solo
+set protocols bgp neighbor 6.0.3.1 timers holdtime '9'
+set protocols bgp neighbor 6.0.3.1 timers keepalive '3'
+set protocols bgp neighbor 6.0.3.1 update-source '6.0.3.2'
+
+set protocols bgp parameters bestpath as-path multipath-relax
+
+set protocols bgp parameters router-id '10.0.10.1'
+
+set protocols bgp peer-group dyn-peers-r0 address-family ipv4-unicast
+set protocols bgp peer-group dyn-peers-r0 ebgp-multihop '3'
+set protocols bgp peer-group dyn-peers-r0 passive
+set protocols bgp peer-group dyn-peers-r0 remote-as '64600'
+set protocols bgp peer-group dyn-peers-r0 update-source '10.0.10.1'
+
+set protocols bgp peer-group dyn-peers-r1 address-family ipv4-unicast
+set protocols bgp peer-group dyn-peers-r1 ebgp-multihop '3'
+set protocols bgp peer-group dyn-peers-r1 passive
+set protocols bgp peer-group dyn-peers-r1 remote-as '64600'
+set protocols bgp peer-group dyn-peers-r1 update-source '10.0.10.1'
+
+set protocols bgp peer-group dyn-peers-r2 address-family ipv4-unicast
+set protocols bgp peer-group dyn-peers-r2 ebgp-multihop '3'
+set protocols bgp peer-group dyn-peers-r2 passive
+set protocols bgp peer-group dyn-peers-r2 remote-as '64600'
+set protocols bgp peer-group dyn-peers-r2 update-source '10.0.10.1'
+
+set protocols bgp peer-group dyn-peers-r3 address-family ipv4-unicast
+set protocols bgp peer-group dyn-peers-r3 ebgp-multihop '3'
+set protocols bgp peer-group dyn-peers-r3 passive
+set protocols bgp peer-group dyn-peers-r3 remote-as '64600'
+set protocols bgp peer-group dyn-peers-r3 update-source '10.0.10.1'
+
+set protocols bgp local-as '65003'
+
+#set service ntp allow-client address '0.0.0.0/0'
+#set service ntp allow-client address '::/0'
+#set service ntp server 0.pool.ntp.org
+#set service ntp server 1.pool.ntp.org
+#set service ntp server 2.pool.ntp.org
+
+set service ssh port '22'
+
+set system host-name 'R1-A'
+
+set system time-zone 'America/Denver'
+
+set system domain-name 'acme.local'
+set system domain-search domain 'acme.local'
+set system name-server 10.99.100.10
+
+set vrf bind-to-all
+set vrf name oob protocols static route 0.0.0.0/0 next-hop 10.10.15.1 interface 'eth0'
+set vrf name oob table '100'

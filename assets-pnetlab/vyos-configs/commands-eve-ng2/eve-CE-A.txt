@@ -1,0 +1,194 @@
+set interfaces ethernet eth0 mtu '8896'
+set interfaces ethernet eth0 address '10.10.15.100/24'
+set interfaces ethernet eth0 vrf 'oob'
+
+set interfaces ethernet eth1 mtu '1460'
+set interfaces ethernet eth1 address '10.10.25.100/24'
+
+set interfaces ethernet eth2 mtu '1460'
+set interfaces ethernet eth2 address '10.10.70.210/32'
+set interfaces ethernet eth2 vrf 'vpn'
+
+set interfaces ethernet eth3 mtu '8846'
+set interfaces ethernet eth3 address '1.0.1.1/30'
+set interfaces ethernet eth3 ipv6 address
+set interfaces ethernet eth3 address 'fd:0:0:101::1111/64'
+
+set interfaces ethernet eth4 mtu '8846'
+set interfaces ethernet eth4 address '1.0.2.1/30'
+set interfaces ethernet eth4 ipv6 address
+set interfaces ethernet eth4 address 'fd:0:0:102::1111/64'
+set interfaces ethernet eth4 disable
+
+set interfaces ethernet eth5 mtu '8846'
+set interfaces ethernet eth5 ipv6 address
+
+set interfaces loopback lo address '10.0.1.1/32'
+set interfaces loopback lo address 'fd:0:0:1::1111/64'
+
+set nat source rule 1 description 'egress SNAT'
+set nat source rule 1 outbound-interface 'eth1'
+set nat source rule 1 source address '!10.10.15.0/24'
+set nat source rule 1 translation address 'masquerade'
+
+set nat source rule 2 destination address '10.200.10.0/24'
+set nat source rule 2 exclude
+set nat source rule 2 outbound-interface 'eth2'
+set nat source rule 2 source address '10.99.100.0/24'
+
+set policy prefix-list route-redist-filtering2 rule 10 action 'deny'
+set policy prefix-list route-redist-filtering2 rule 10 prefix '10.15.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 100 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 100 ge '16'
+set policy prefix-list route-redist-filtering2 rule 100 prefix '192.168.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 101 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 101 ge '16'
+set policy prefix-list route-redist-filtering2 rule 101 prefix '172.16.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 110 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 110 ge '8'
+set policy prefix-list route-redist-filtering2 rule 110 prefix '10.0.0.0/8'
+
+set policy prefix-list route-redist-filtering2 rule 120 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 120 ge '16'
+set policy prefix-list route-redist-filtering2 rule 120 prefix '1.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 121 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 121 ge '16'
+set policy prefix-list route-redist-filtering2 rule 121 prefix '2.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 122 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 122 ge '16'
+set policy prefix-list route-redist-filtering2 rule 122 prefix '3.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 123 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 123 ge '16'
+set policy prefix-list route-redist-filtering2 rule 123 prefix '4.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 124 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 124 ge '16'
+set policy prefix-list route-redist-filtering2 rule 124 prefix '5.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 125 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 125 ge '16'
+set policy prefix-list route-redist-filtering2 rule 125 prefix '6.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 192 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 192 ge '8'
+set policy prefix-list route-redist-filtering2 rule 192 prefix '192.0.0.0/8'
+
+set policy prefix-list6 route-redist-filtering6 rule 620 action 'permit'
+set policy prefix-list6 route-redist-filtering6 rule 620 ge '48'
+set policy prefix-list6 route-redist-filtering6 rule 620 prefix 'fd::/48'
+
+set protocols bfd peer 1.0.1.2
+set protocols bfd peer 1.0.2.2
+
+set protocols bgp address-family ipv4-unicast redistribute connected
+set protocols bgp address-family ipv4-unicast redistribute static
+
+set protocols bgp address-family ipv6-unicast network fd:0::/32
+set protocols bgp address-family ipv6-unicast redistribute connected
+set protocols bgp address-family ipv6-unicast redistribute static
+
+set protocols bgp neighbor 1.0.1.2 address-family ipv4-unicast default-originate
+set protocols bgp neighbor 1.0.1.2 address-family ipv4-unicast prefix-list export 'route-redist-filtering2'
+set protocols bgp neighbor 1.0.1.2 address-family ipv4-unicast prefix-list import 'route-redist-filtering2'
+set protocols bgp neighbor 1.0.1.2 bfd
+set protocols bgp neighbor 1.0.1.2 remote-as '65002'
+set protocols bgp neighbor 1.0.1.2 timers holdtime '9'
+set protocols bgp neighbor 1.0.1.2 timers keepalive '3'
+set protocols bgp neighbor 1.0.1.2 update-source '1.0.1.1'
+
+set protocols bgp neighbor 1.0.2.2 address-family ipv4-unicast default-originate
+set protocols bgp neighbor 1.0.2.2 address-family ipv4-unicast prefix-list export 'route-redist-filtering2'
+set protocols bgp neighbor 1.0.2.2 address-family ipv4-unicast prefix-list import 'route-redist-filtering2'
+set protocols bgp neighbor 1.0.2.2 bfd
+set protocols bgp neighbor 1.0.2.2 remote-as '65002'
+set protocols bgp neighbor 1.0.2.2 timers holdtime '9'
+set protocols bgp neighbor 1.0.2.2 timers keepalive '3'
+set protocols bgp neighbor 1.0.2.2 update-source '1.0.2.1'
+
+set protocols bgp neighbor fd:0:0:101::2222 address-family ipv6-unicast default-originate
+set protocols bgp neighbor fd:0:0:101::2222 ebgp-multihop '2'
+set protocols bgp neighbor fd:0:0:101::2222 remote-as '65002'
+set protocols bgp neighbor fd:0:0:101::2222 timers holdtime '9'
+set protocols bgp neighbor fd:0:0:101::2222 timers keepalive '3'
+set protocols bgp neighbor fd:0:0:101::2222 update-source 'fd:0:0:101::1111'
+
+set protocols bgp neighbor fd:0:0:102::2222 address-family ipv6-unicast default-originate
+set protocols bgp neighbor fd:0:0:102::2222 ebgp-multihop '2'
+set protocols bgp neighbor fd:0:0:102::2222 remote-as '65002'
+set protocols bgp neighbor fd:0:0:102::2222 timers holdtime '9'
+set protocols bgp neighbor fd:0:0:102::2222 timers keepalive '3'
+set protocols bgp neighbor fd:0:0:102::2222 update-source 'fd:0:0:102::1111'
+
+set protocols bgp parameters bestpath as-path multipath-relax
+
+set protocols bgp parameters router-id '10.0.1.1'
+set protocols bgp local-as '65001'
+
+set service ssh port '22'
+
+set system domain-name 'acme.local'
+set system domain-search domain 'acme.local'
+set system name-server 10.99.100.10
+
+
+set system host-name 'CE-A'
+
+set system ntp allow-clients
+set system ntp listen-address '10.10.25.101'
+set system ntp server 0.pool.ntp.org
+set system ntp server 1.pool.ntp.org
+set system ntp server 2.pool.ntp.org
+
+set system time-zone 'America/Denver'
+
+
+set vpn ipsec interface 'eth2'
+
+#set vpn ipsec esp-group aes256-sha256 lifetime '28800'
+#set vpn ipsec esp-group aes256-sha256 mode 'tunnel'
+#set vpn ipsec esp-group aes256-sha256 pfs 'dh-group19'
+#set vpn ipsec esp-group aes256-sha256 proposal 1 encryption 'aes256'
+#set vpn ipsec esp-group aes256-sha256 proposal 1 hash 'sha256'
+#set vpn ipsec ike-group aes256-sha256 dead-peer-detection action 'restart'
+#set vpn ipsec ike-group aes256-sha256 dead-peer-detection interval '30'
+#set vpn ipsec ike-group aes256-sha256 dead-peer-detection timeout '120'
+#set vpn ipsec ike-group aes256-sha256 key-exchange 'ikev2'
+#set vpn ipsec ike-group aes256-sha256 lifetime '3600'
+#set vpn ipsec ike-group aes256-sha256 proposal 1 dh-group '19'
+#set vpn ipsec ike-group aes256-sha256 proposal 1 encryption 'aes256'
+#set vpn ipsec ike-group aes256-sha256 proposal 1 hash 'sha256'
+
+#set vpn ipsec site-to-site peer cloud-vpn-1-classic authentication mode 'pre-shared-secret'
+#set vpn ipsec site-to-site peer cloud-vpn-1-classic authentication pre-shared-secret 'Cw0xGAqJZxxDAHI0iZZF3d7yUnF/3GeK'
+#set vpn ipsec site-to-site peer cloud-vpn-1-classic ike-group 'aes256-sha256'
+#set vpn ipsec site-to-site peer cloud-vpn-1-classic local-address '10.10.70.210'
+#set vpn ipsec site-to-site peer cloud-vpn-1-classic tunnel 0 remote address '34.172.42.29/32'
+#set vpn ipsec site-to-site peer cloud-vpn-1-classic tunnel 0 esp-group 'aes256-sha256'
+#set vpn ipsec site-to-site peer cloud-vpn-1-classic tunnel 0 local prefix '10.99.100.0/24'
+#set vpn ipsec site-to-site peer cloud-vpn-1-classic tunnel 0 local prefix '10.100.100.0/24'
+#set vpn ipsec site-to-site peer cloud-vpn-1-classic tunnel 0 local prefix '10.110.100.0/24'
+#set vpn ipsec site-to-site peer cloud-vpn-1-classic tunnel 0 local prefix '10.120.100.0/24'
+#set vpn ipsec site-to-site peer cloud-vpn-1-classic tunnel 0 local prefix '10.130.100.0/24'
+#set vpn ipsec site-to-site peer cloud-vpn-1-classic tunnel 0 remote prefix '10.200.10.0/24'
+#set vpn ipsec site-to-site peer cloud-vpn-1-classic tunnel 0 remote prefix '10.210.10.0/24'
+
+
+set protocols static route 0.0.0.0/0 next-hop 10.10.25.1 interface 'eth1'
+
+set protocols static route 10.10.75.1/32 interface eth2
+
+set protocols static route 34.172.42.29/32 interface eth2
+set protocols static route 34.172.42.29/32 next-hop 10.10.75.1
+
+set vrf bind-to-all
+set vrf name oob protocols static route 0.0.0.0/0 next-hop 10.10.15.1 interface 'eth0'
+set vrf name oob table '100'
+set vrf name vpn protocols static route 0.0.0.0/0 next-hop 10.10.75.1 interface 'eth2'
+set vrf name vpn protocols static route 10.10.75.1/32 interface eth2
+set vrf name vpn table '800'

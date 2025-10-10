@@ -1,0 +1,313 @@
+
+set interfaces ethernet eth0 mtu '8896'
+set interfaces ethernet eth0 address '10.10.15.117/24'
+set interfaces ethernet eth0 vrf 'oob'
+
+set interfaces ethernet eth1 mtu '8846'
+
+set interfaces ethernet eth2 mtu '8846'
+set interfaces ethernet eth2 address '5.0.10.2/30'
+
+set interfaces ethernet eth3 mtu '8846'
+set interfaces ethernet eth3 address '6.0.10.2/30'
+
+set interfaces ethernet eth4 mtu '8846'
+
+set interfaces loopback lo address '10.0.40.2/32'
+set interfaces loopback lo address 'fd:0:0:40::2222/64'
+
+set interfaces bridge br113 address '10.140.100.3/24'
+set interfaces bridge br113 member interface eth1
+set interfaces bridge br113 member interface eth4
+
+set high-availability vrrp group gw100 address 10.140.100.1/24
+set high-availability vrrp group gw100 advertise-interval '1'
+set high-availability vrrp group gw100 interface 'br113'
+set high-availability vrrp group gw100 preempt-delay '3'
+set high-availability vrrp group gw100 priority '10'
+set high-availability vrrp group gw100 vrid '100'
+
+set high-availability vrrp group gw101 address 10.140.101.1/24
+set high-availability vrrp group gw101 advertise-interval '1'
+set high-availability vrrp group gw101 interface 'br113'
+set high-availability vrrp group gw101 preempt-delay '3'
+set high-availability vrrp group gw101 priority '10'
+set high-availability vrrp group gw101 vrid '101'
+
+set high-availability vrrp group gw102 address 10.140.102.1/24
+set high-availability vrrp group gw102 advertise-interval '1'
+set high-availability vrrp group gw102 interface 'br113'
+set high-availability vrrp group gw102 preempt-delay '3'
+set high-availability vrrp group gw102 priority '10'
+set high-availability vrrp group gw102 vrid '102'
+
+set high-availability vrrp group gw103 address 10.140.103.1/24
+set high-availability vrrp group gw103 advertise-interval '1'
+set high-availability vrrp group gw103 interface 'br113'
+set high-availability vrrp group gw103 preempt-delay '3'
+set high-availability vrrp group gw103 priority '10'
+set high-availability vrrp group gw103 vrid '103'
+
+set high-availability vrrp group gw104 address 10.140.104.1/24
+set high-availability vrrp group gw104 advertise-interval '1'
+set high-availability vrrp group gw104 interface 'br113'
+set high-availability vrrp group gw104 preempt-delay '3'
+set high-availability vrrp group gw104 priority '10'
+set high-availability vrrp group gw104 vrid '104'
+
+set high-availability vrrp group gw105 address 10.140.105.1/24
+set high-availability vrrp group gw105 advertise-interval '1'
+set high-availability vrrp group gw105 interface 'br113'
+set high-availability vrrp group gw105 preempt-delay '3'
+set high-availability vrrp group gw105 priority '10'
+set high-availability vrrp group gw105 vrid '105'
+
+set high-availability vrrp group gw106 address 10.140.106.1/24
+set high-availability vrrp group gw106 advertise-interval '1'
+set high-availability vrrp group gw106 interface 'br113'
+set high-availability vrrp group gw106 preempt-delay '3'
+set high-availability vrrp group gw106 priority '10'
+set high-availability vrrp group gw106 vrid '106'
+
+set high-availability vrrp group gw107 address 10.140.107.1/24
+set high-availability vrrp group gw107 advertise-interval '1'
+set high-availability vrrp group gw107 interface 'br113'
+set high-availability vrrp group gw107 preempt-delay '3'
+set high-availability vrrp group gw107 priority '10'
+set high-availability vrrp group gw107 vrid '107'
+
+set high-availability vrrp group gw108 address 10.140.108.1/24
+set high-availability vrrp group gw108 advertise-interval '1'
+set high-availability vrrp group gw108 interface 'br113'
+set high-availability vrrp group gw108 preempt-delay '3'
+set high-availability vrrp group gw108 priority '10'
+set high-availability vrrp group gw108 vrid '108'
+
+set high-availability vrrp group gw109 address 10.140.109.1/24
+set high-availability vrrp group gw109 advertise-interval '1'
+set high-availability vrrp group gw109 interface 'br113'
+set high-availability vrrp group gw109 preempt-delay '3'
+set high-availability vrrp group gw109 priority '10'
+set high-availability vrrp group gw109 vrid '109'
+
+set high-availability vrrp group gw150 address 10.145.100.1/24
+set high-availability vrrp group gw150 advertise-interval '1'
+set high-availability vrrp group gw150 interface 'br113'
+set high-availability vrrp group gw150 preempt-delay '3'
+set high-availability vrrp group gw150 priority '100'
+set high-availability vrrp group gw150 vrid '150'
+
+set high-availability vrrp group gw151 address 10.145.101.1/24
+set high-availability vrrp group gw151 advertise-interval '1'
+set high-availability vrrp group gw151 interface 'br113'
+set high-availability vrrp group gw151 preempt-delay '3'
+set high-availability vrrp group gw151 priority '100'
+set high-availability vrrp group gw151 vrid '151'
+
+set high-availability vrrp group gw152 address 10.145.102.1/24
+set high-availability vrrp group gw152 advertise-interval '1'
+set high-availability vrrp group gw152 interface 'br113'
+set high-availability vrrp group gw152 preempt-delay '3'
+set high-availability vrrp group gw152 priority '100'
+set high-availability vrrp group gw152 vrid '152'
+
+set high-availability vrrp group gw153 address 10.145.103.1/24
+set high-availability vrrp group gw153 advertise-interval '1'
+set high-availability vrrp group gw153 interface 'br113'
+set high-availability vrrp group gw153 preempt-delay '3'
+set high-availability vrrp group gw153 priority '100'
+set high-availability vrrp group gw153 vrid '153'
+
+set high-availability vrrp group gw154 address 10.145.104.1/24
+set high-availability vrrp group gw154 advertise-interval '1'
+set high-availability vrrp group gw154 interface 'br113'
+set high-availability vrrp group gw154 preempt-delay '3'
+set high-availability vrrp group gw154 priority '100'
+set high-availability vrrp group gw154 vrid '154'
+
+set high-availability vrrp group gw155 address 10.145.105.1/24
+set high-availability vrrp group gw155 advertise-interval '1'
+set high-availability vrrp group gw155 interface 'br113'
+set high-availability vrrp group gw155 preempt-delay '3'
+set high-availability vrrp group gw155 priority '100'
+set high-availability vrrp group gw155 vrid '155'
+
+set high-availability vrrp group gw156 address 10.145.106.1/24
+set high-availability vrrp group gw156 advertise-interval '1'
+set high-availability vrrp group gw156 interface 'br113'
+set high-availability vrrp group gw156 preempt-delay '3'
+set high-availability vrrp group gw156 priority '100'
+set high-availability vrrp group gw156 vrid '156'
+
+set high-availability vrrp group gw157 address 10.145.107.1/24
+set high-availability vrrp group gw157 advertise-interval '1'
+set high-availability vrrp group gw157 interface 'br113'
+set high-availability vrrp group gw157 preempt-delay '3'
+set high-availability vrrp group gw157 priority '100'
+set high-availability vrrp group gw157 vrid '157'
+
+set high-availability vrrp group gw158 address 10.145.108.1/24
+set high-availability vrrp group gw158 advertise-interval '1'
+set high-availability vrrp group gw158 interface 'br113'
+set high-availability vrrp group gw158 preempt-delay '3'
+set high-availability vrrp group gw158 priority '100'
+set high-availability vrrp group gw158 vrid '158'
+
+set high-availability vrrp group gw159 address 10.145.109.1/24
+set high-availability vrrp group gw159 advertise-interval '1'
+set high-availability vrrp group gw159 interface 'br113'
+set high-availability vrrp group gw159 preempt-delay '3'
+set high-availability vrrp group gw159 priority '100'
+set high-availability vrrp group gw159 vrid '159'
+
+set policy prefix-list default-route rule 1 action 'permit'
+set policy prefix-list default-route rule 1 prefix '0.0.0.0/0'
+
+set policy prefix-list default-route rule 2 action 'deny'
+set policy prefix-list default-route rule 2 ge '1'
+set policy prefix-list default-route rule 2 prefix '0.0.0.0/0'
+
+set policy prefix-list route-redist-filtering2 rule 10 action 'deny'
+set policy prefix-list route-redist-filtering2 rule 10 prefix '10.15.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 100 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 100 ge '16'
+set policy prefix-list route-redist-filtering2 rule 100 prefix '192.168.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 101 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 101 ge '16'
+set policy prefix-list route-redist-filtering2 rule 101 prefix '172.16.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 110 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 110 ge '8'
+set policy prefix-list route-redist-filtering2 rule 110 prefix '10.0.0.0/8'
+
+set policy prefix-list route-redist-filtering2 rule 120 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 120 ge '16'
+set policy prefix-list route-redist-filtering2 rule 120 prefix '1.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 121 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 121 ge '16'
+set policy prefix-list route-redist-filtering2 rule 121 prefix '2.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 122 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 122 ge '16'
+set policy prefix-list route-redist-filtering2 rule 122 prefix '3.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 123 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 123 ge '16'
+set policy prefix-list route-redist-filtering2 rule 123 prefix '4.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 124 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 124 ge '16'
+set policy prefix-list route-redist-filtering2 rule 124 prefix '5.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 125 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 125 ge '16'
+set policy prefix-list route-redist-filtering2 rule 125 prefix '6.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 200 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 200 prefix '0.0.0.0/0'
+
+set policy prefix-list6 route-redist-filtering6 rule 620 action 'permit'
+set policy prefix-list6 route-redist-filtering6 rule 620 ge '48'
+set policy prefix-list6 route-redist-filtering6 rule 620 prefix 'fd::/48'
+
+set protocols bgp address-family ipv4-unicast redistribute connected
+set protocols bgp address-family ipv4-unicast redistribute static
+
+set protocols bgp address-family ipv6-unicast redistribute connected
+set protocols bgp address-family ipv6-unicast redistribute static
+
+set protocols bgp listen range 10.140.101.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.140.102.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.140.103.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.140.104.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.140.105.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.140.106.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.140.107.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.140.108.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.140.109.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.145.101.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.145.102.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.145.103.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.145.104.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.145.105.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.145.106.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.145.107.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.145.108.0/24 peer-group 'peers-l1'
+set protocols bgp listen range 10.145.109.0/24 peer-group 'peers-l1'
+
+set protocols bgp listen range 10.240.101.0/24 peer-group 'l2-peers'
+set protocols bgp listen range 10.240.102.0/24 peer-group 'l2-peers'
+set protocols bgp listen range 10.240.103.0/24 peer-group 'l2-peers'
+set protocols bgp listen range 10.240.104.0/24 peer-group 'l2-peers'
+set protocols bgp listen range 10.240.105.0/24 peer-group 'l2-peers'
+set protocols bgp listen range 10.240.106.0/24 peer-group 'l2-peers'
+set protocols bgp listen range 10.240.107.0/24 peer-group 'l2-peers'
+set protocols bgp listen range 10.240.108.0/24 peer-group 'l2-peers'
+set protocols bgp listen range 10.240.109.0/24 peer-group 'l2-peers'
+
+set protocols bgp local-as '65003'
+
+set protocols bgp neighbor 5.0.10.1 address-family ipv4-unicast
+set protocols bgp neighbor 5.0.10.1 address-family ipv6-unicast
+set protocols bgp neighbor 5.0.10.1 bfd
+set protocols bgp neighbor 5.0.10.1 remote-as '65003'
+set protocols bgp neighbor 5.0.10.1 timers holdtime '9'
+set protocols bgp neighbor 5.0.10.1 timers keepalive '3'
+set protocols bgp neighbor 5.0.10.1 update-source '5.0.10.2'
+
+set protocols bgp neighbor 6.0.10.1 address-family ipv4-unicast
+set protocols bgp neighbor 6.0.10.1 address-family ipv6-unicast
+set protocols bgp neighbor 6.0.10.1 bfd
+set protocols bgp neighbor 6.0.10.1 remote-as '65003'
+set protocols bgp neighbor 6.0.10.1 timers holdtime '9'
+set protocols bgp neighbor 6.0.10.1 timers keepalive '3'
+set protocols bgp neighbor 6.0.10.1 update-source '6.0.10.2'
+
+set protocols bgp parameters bestpath as-path multipath-relax
+
+set protocols bgp parameters router-id '10.0.40.2'
+
+set protocols bgp peer-group l2-peers address-family ipv4-unicast default-originate
+set protocols bgp peer-group l2-peers address-family ipv4-unicast nexthop-self
+set protocols bgp peer-group l2-peers address-family ipv4-unicast prefix-list export 'default-route'
+set protocols bgp peer-group l2-peers address-family ipv4-unicast prefix-list import 'route-redist-filtering2'
+set protocols bgp peer-group l2-peers description 'lvl 2 peering'
+set protocols bgp peer-group l2-peers ebgp-multihop '2'
+set protocols bgp peer-group l2-peers passive
+set protocols bgp peer-group l2-peers remote-as '64620'
+set protocols bgp peer-group l2-peers update-source '10.0.40.2'
+
+set protocols bgp peer-group peers-l1 address-family ipv4-unicast default-originate
+set protocols bgp peer-group peers-l1 address-family ipv4-unicast nexthop-self
+set protocols bgp peer-group peers-l1 address-family ipv4-unicast prefix-list export 'default-route'
+set protocols bgp peer-group peers-l1 address-family ipv4-unicast prefix-list import 'route-redist-filtering2'
+set protocols bgp peer-group peers-l1 description 'level 1 dynamic peering'
+set protocols bgp peer-group peers-l1 ebgp-multihop '2'
+set protocols bgp peer-group peers-l1 passive
+set protocols bgp peer-group peers-l1 remote-as '64610'
+set protocols bgp peer-group peers-l1 update-source '10.0.40.2'
+
+set service ssh port '22'
+
+set system host-name 'R4-B-L3'
+
+set system ntp server 0.pool.ntp.org
+set system ntp server 1.pool.ntp.org
+set system ntp server 2.pool.ntp.org
+set system ntp server time1.vyos.net
+set system ntp server time2.vyos.net
+set system ntp server time3.vyos.net
+
+set system time-zone 'America/Denver'
+
+set system domain-name 'acme.local'
+set system domain-search domain 'acme.local'
+set system name-server 10.99.100.10
+
+
+set vrf bind-to-all
+set vrf name oob protocols static route 0.0.0.0/0 next-hop 10.10.15.1 interface 'eth0'
+set vrf name oob table '100'

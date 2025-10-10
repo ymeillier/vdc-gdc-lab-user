@@ -1,0 +1,126 @@
+set high-availability vrrp group gw-100 address 10.100.100.1/24
+set high-availability vrrp group gw-100 advertise-interval '1'
+set high-availability vrrp group gw-100 interface 'br100'
+set high-availability vrrp group gw-100 no-preempt
+set high-availability vrrp group gw-100 priority '100'
+set high-availability vrrp group gw-100 vrid '100'
+set high-availability vrrp group gw-101 address 10.100.101.1/24
+set high-availability vrrp group gw-101 advertise-interval '1'
+set high-availability vrrp group gw-101 interface 'br100'
+set high-availability vrrp group gw-101 no-preempt
+set high-availability vrrp group gw-101 priority '100'
+set high-availability vrrp group gw-101 vrid '101'
+set interfaces bridge br100 address '10.100.100.2/24'
+set interfaces bridge br100 member interface eth1
+set interfaces bridge br100 member interface eth6
+set interfaces ethernet eth0 address '10.10.15.106/24'
+set interfaces ethernet eth0 hw-id '50:91:6e:00:05:00'
+set interfaces ethernet eth0 mtu '8896'
+set interfaces ethernet eth0 vrf 'oob'
+set interfaces ethernet eth1 hw-id '50:91:6e:00:05:01'
+set interfaces ethernet eth1 mtu '8896'
+set interfaces ethernet eth2 address '3.0.3.2/30'
+set interfaces ethernet eth2 hw-id '50:91:6e:00:05:02'
+set interfaces ethernet eth2 mtu '8896'
+set interfaces ethernet eth3 address '4.0.3.2/30'
+set interfaces ethernet eth3 hw-id '50:91:6e:00:05:03'
+set interfaces ethernet eth3 mtu '8896'
+set interfaces ethernet eth4 address '5.0.1.2/30'
+set interfaces ethernet eth4 hw-id '50:91:6e:00:05:04'
+set interfaces ethernet eth4 mtu '8896'
+set interfaces ethernet eth5 address '6.0.1.2/30'
+set interfaces ethernet eth5 hw-id '50:91:6e:00:05:05'
+set interfaces ethernet eth5 mtu '8896'
+set interfaces ethernet eth6 hw-id '50:91:6e:00:05:06'
+set interfaces ethernet eth7 hw-id '50:91:6e:00:05:07'
+set interfaces loopback lo address '10.0.0.1/32'
+set policy prefix-list route-redist-filtering2 rule 10 action 'deny'
+set policy prefix-list route-redist-filtering2 rule 10 prefix '10.15.0.0/16'
+set policy prefix-list route-redist-filtering2 rule 100 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 100 ge '16'
+set policy prefix-list route-redist-filtering2 rule 100 prefix '192.168.0.0/16'
+set policy prefix-list route-redist-filtering2 rule 101 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 101 ge '16'
+set policy prefix-list route-redist-filtering2 rule 101 prefix '172.16.0.0/16'
+set policy prefix-list route-redist-filtering2 rule 110 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 110 ge '8'
+set policy prefix-list route-redist-filtering2 rule 110 prefix '10.0.0.0/8'
+set policy prefix-list route-redist-filtering2 rule 120 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 120 ge '16'
+set policy prefix-list route-redist-filtering2 rule 120 prefix '1.0.0.0/16'
+set policy prefix-list route-redist-filtering2 rule 121 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 121 ge '16'
+set policy prefix-list route-redist-filtering2 rule 121 prefix '2.0.0.0/16'
+set policy prefix-list route-redist-filtering2 rule 122 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 122 ge '16'
+set policy prefix-list route-redist-filtering2 rule 122 prefix '3.0.0.0/16'
+set policy prefix-list route-redist-filtering2 rule 123 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 123 ge '16'
+set policy prefix-list route-redist-filtering2 rule 123 prefix '4.0.0.0/16'
+set policy prefix-list route-redist-filtering2 rule 124 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 124 ge '16'
+set policy prefix-list route-redist-filtering2 rule 124 prefix '5.0.0.0/16'
+set policy prefix-list route-redist-filtering2 rule 125 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 125 ge '16'
+set policy prefix-list route-redist-filtering2 rule 125 prefix '6.0.0.0/16'
+set policy prefix-list route-redist-filtering2 rule 200 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 200 prefix '0.0.0.0/0'
+set protocols bfd peer 3.0.3.1
+set protocols bfd peer 4.0.3.1
+set protocols bfd peer 5.0.1.1
+set protocols bfd peer 6.0.1.1
+set protocols bgp address-family ipv4-unicast redistribute connected
+set protocols bgp address-family ipv4-unicast redistribute static
+set protocols bgp neighbor 3.0.3.1 address-family ipv4-unicast prefix-list export 'route-redist-filtering2'
+set protocols bgp neighbor 3.0.3.1 address-family ipv4-unicast prefix-list import 'route-redist-filtering2'
+set protocols bgp neighbor 3.0.3.1 bfd
+set protocols bgp neighbor 3.0.3.1 remote-as '65002'
+set protocols bgp neighbor 3.0.3.1 timers holdtime '9'
+set protocols bgp neighbor 3.0.3.1 timers keepalive '3'
+set protocols bgp neighbor 3.0.3.1 update-source '3.0.3.2'
+set protocols bgp neighbor 4.0.3.1 address-family ipv4-unicast prefix-list export 'route-redist-filtering2'
+set protocols bgp neighbor 4.0.3.1 address-family ipv4-unicast prefix-list import 'route-redist-filtering2'
+set protocols bgp neighbor 4.0.3.1 bfd
+set protocols bgp neighbor 4.0.3.1 remote-as '65002'
+set protocols bgp neighbor 4.0.3.1 timers holdtime '9'
+set protocols bgp neighbor 4.0.3.1 timers keepalive '3'
+set protocols bgp neighbor 4.0.3.1 update-source '4.0.3.2'
+set protocols bgp neighbor 5.0.1.1 address-family ipv4-unicast prefix-list export 'route-redist-filtering2'
+set protocols bgp neighbor 5.0.1.1 address-family ipv4-unicast prefix-list import 'route-redist-filtering2'
+set protocols bgp neighbor 5.0.1.1 bfd
+set protocols bgp neighbor 5.0.1.1 remote-as '65003'
+set protocols bgp neighbor 5.0.1.1 timers holdtime '9'
+set protocols bgp neighbor 5.0.1.1 timers keepalive '3'
+set protocols bgp neighbor 5.0.1.1 update-source '5.0.1.2'
+set protocols bgp neighbor 6.0.1.1 address-family ipv4-unicast prefix-list export 'route-redist-filtering2'
+set protocols bgp neighbor 6.0.1.1 address-family ipv4-unicast prefix-list import 'route-redist-filtering2'
+set protocols bgp neighbor 6.0.1.1 bfd
+set protocols bgp neighbor 6.0.1.1 remote-as '65003'
+set protocols bgp neighbor 6.0.1.1 timers holdtime '9'
+set protocols bgp neighbor 6.0.1.1 timers keepalive '3'
+set protocols bgp neighbor 6.0.1.1 update-source '6.0.1.2'
+set protocols bgp parameters bestpath as-path multipath-relax
+set protocols bgp parameters router-id '10.0.0.1'
+set protocols bgp system-as '65010'
+set service ssh port '22'
+set system config-management commit-revisions '100'
+set system conntrack modules ftp
+set system conntrack modules h323
+set system conntrack modules nfs
+set system conntrack modules pptp
+set system conntrack modules sip
+set system conntrack modules sqlnet
+set system conntrack modules tftp
+set system console device ttyS0 speed '115200'
+set system host-name 'Border-A'
+set system login user vyos authentication encrypted-password '$6$hL5MbeXxuSMY4hYP$EQDOB3g3xTQhZEt0zzqHXYwjR4y38KDXazGXjgZQhR3FBB6ZhwUQbDRXNNhGxEFSsAPZVzr0bwMCsZTw1d96B1'
+set system login user vyos authentication plaintext-password ''
+set system ntp server 0.pool.ntp.org
+set system ntp server 1.pool.ntp.org
+set system ntp server 2.pool.ntp.org
+set system syslog global facility all level 'info'
+set system syslog global facility protocols level 'debug'
+set system time-zone 'America/Denver'
+set vrf bind-to-all
+set vrf name oob protocols static route 0.0.0.0/0 next-hop 10.10.15.1 interface 'eth0'
+set vrf name oob table '100'

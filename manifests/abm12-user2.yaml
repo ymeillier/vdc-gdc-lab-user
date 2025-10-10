@@ -1,0 +1,207 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cluster-abm12-user2
+---
+apiVersion: baremetal.cluster.gke.io/v1
+kind: Cluster
+metadata:
+  name: abm12-user2
+  namespace: cluster-abm12-user2
+spec:
+  type: user
+  profile: default
+  # Anthos cluster version.
+  anthosBareMetalVersion: 1.32.400-gke.68
+  # GKE connect configuration
+  gkeConnect:
+    projectID: gdc-09289
+  # Control plane configuration
+  controlPlane:
+    nodePoolSpec:
+      nodes:
+      - address: 10.110.102.11
+      - address: 10.120.102.11
+      - address: 10.130.102.11
+  # Cluster networking configuration
+  clusterNetwork:
+    advancedNetworking: true
+    # Pods specify the IP ranges from which pod networks are allocated.
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+    services:
+      cidrBlocks:
+      - 172.16.0.0/16
+  # Load balancer configuration
+  loadBalancer:
+    mode: bundled
+    type: bgp
+    localASN: 64600 
+    bgpPeers:
+    - ip: 10.0.140.1
+      asn: 65003
+      controlPlaneNodes:
+        - 10.110.102.11
+        - 10.120.102.11
+        - 10.130.102.11
+      # setting controlPlaneNodes is optional; if not specified, all CP nodes connect to all peers:
+    - ip: 10.0.140.2
+      asn: 65003
+      controlPlaneNodes:
+        - 10.110.102.11
+        - 10.120.102.11
+        - 10.130.102.11
+      # setting controlPlaneNodes is optional; if not specified, all CP nodes connect to all peers:
+    # Load balancer port configuration
+    ports:
+      controlPlaneLBPort: 443
+    vips:
+      controlPlaneVIP: 10.212.102.110
+      ingressVIP: 10.212.102.111
+    addressPools:
+    - name: pool1
+      addresses:
+      - 10.212.102.111-10.212.102.199
+    nodePoolSpec:
+     nodes:
+     - address: 10.110.102.15
+     - address: 10.120.102.15
+     - address: 10.130.102.15
+  # Logging and Monitoring
+  clusterOperations:
+    # Cloud project for logs and metrics.
+    projectID: gdc-09289
+    # Cloud location for logs and metrics.
+    location: us-central1
+  # Storage configuration
+  storage:
+    lvpNodeMounts:
+      path: /mnt/localpv-disk
+      storageClassName: local-disks
+    lvpShare:
+      path: /mnt/localpv-share
+      storageClassName: local-shared
+      numPVUnderSharedPath: 5
+  nodeConfig:
+    podDensity:
+      maxPodsPerNode: 110
+  # GKEOnPremAPI (Optional) Specify if you wish to explicitly enable/disable the cloud hosted gkeonprem
+  # API to enable/disable cluster lifecycle management from gcloud UI and Terraform.
+  # gkeOnPremAPI:
+    # enabled: false
+    # location is the Cloud location for the cluster resource metadata where the cluster will be enrolled.
+    # location: us-central1
+  clusterSecurity:
+    authorization:
+      clusterAdmin:
+        gcpAccounts:
+        - admin@meillier.altostrat.com
+---
+## Node pools for worker nodes
+#apiVersion: baremetal.cluster.gke.io/v1
+#kind: NodePool
+#metadata:
+#  name: node-pool-1
+#  namespace: cluster-abm12-user2
+#spec:
+#  clusterName: abm12-user2
+#  nodes:
+#  - address: 10.110.102.15
+#  - address: 10.120.102.15
+#  - address: 10.130.102.15
+---
+### Dataplane Load Balancing Configs
+apiVersion: networking.gke.io/v1
+kind: BGPLoadBalancer
+metadata:
+  name: default
+  namespace: cluster-abm12-user2
+spec:
+  peerSelector:
+    BGP-ROUTERS: "true"
+---
+apiVersion: networking.gke.io/v1
+kind: NetworkGatewayGroup
+metadata:
+  name: ngwg-r1
+  namespace: cluster-abm12-user2
+spec:
+  floatingIPs:
+  - 10.110.102.221
+  - 10.110.102.222
+---
+apiVersion: networking.gke.io/v1
+kind: NetworkGatewayGroup
+metadata:
+  name: ngwg-r2
+  namespace: cluster-abm12-user2
+spec:
+  floatingIPs:
+  - 10.120.102.221
+  - 10.120.102.222
+---
+apiVersion: networking.gke.io/v1
+kind: NetworkGatewayGroup
+metadata:
+  name: ngwg-r3
+  namespace: cluster-abm12-user2
+spec:
+  floatingIPs:
+  - 10.130.102.221
+  - 10.130.102.222
+---
+apiVersion: networking.gke.io/v1
+kind: BGPPeer
+metadata:
+  name: r1
+  namespace: cluster-abm12-user2
+  labels:
+    BGP-ROUTERS: "true"
+spec:
+  localASN: 64600
+  peerASN: 65003
+  peerIP: 10.0.10.1
+  selectors:
+    floatingIPs:
+    - 10.110.102.221
+    gatewayRefs:
+    - ngwg-r1
+  sessions: 6
+---
+apiVersion: networking.gke.io/v1
+kind: BGPPeer
+metadata:
+  name: r2
+  namespace: cluster-abm12-user2
+  labels:
+    BGP-ROUTERS: "true"
+spec:
+  localASN: 64600
+  peerASN: 65003
+  peerIP: 10.0.20.1
+  selectors:
+    floatingIPs:
+    - 10.120.102.221
+    gatewayRefs:
+    - ngwg-r2
+  sessions: 6
+---
+apiVersion: networking.gke.io/v1
+kind: BGPPeer
+metadata:
+  name: r3
+  namespace: cluster-abm12-user2
+  labels:
+    BGP-ROUTERS: "true"
+spec:
+  localASN: 64600
+  peerASN: 65003
+  peerIP: 10.0.30.2
+  selectors:
+    floatingIPs:
+    - 10.130.102.221
+    gatewayRefs:
+    - ngwg-r3
+  sessions: 6

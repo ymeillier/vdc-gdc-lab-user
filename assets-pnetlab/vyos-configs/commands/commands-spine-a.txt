@@ -1,0 +1,207 @@
+set firewall send-redirects 'disable'
+set interfaces ethernet eth0 address '10.10.16.114/24'
+set interfaces ethernet eth0 hw-id '50:19:1b:00:0d:00'
+set interfaces ethernet eth0 ipv6 address no-default-link-local
+set interfaces ethernet eth0 mtu '8896'
+set interfaces ethernet eth0 vrf 'oob'
+set interfaces ethernet eth1 address '5.0.1.1/30'
+set interfaces ethernet eth1 address 'fd:0:0:501::1111/64'
+set interfaces ethernet eth1 hw-id '50:19:1b:00:0d:01'
+set interfaces ethernet eth1 ipv6 address
+set interfaces ethernet eth1 mtu '8846'
+set interfaces ethernet eth2 address '5.0.2.1/30'
+set interfaces ethernet eth2 address 'fd:0:0:502::1111/64'
+set interfaces ethernet eth2 disable
+set interfaces ethernet eth2 hw-id '50:19:1b:00:0d:02'
+set interfaces ethernet eth2 ipv6 address
+set interfaces ethernet eth2 mtu '8846'
+set interfaces ethernet eth3 address '5.0.3.1/30'
+set interfaces ethernet eth3 address 'fd:0:0:503::1111/64'
+set interfaces ethernet eth3 hw-id '50:19:1b:00:0d:03'
+set interfaces ethernet eth3 ipv6 address
+set interfaces ethernet eth3 mtu '8846'
+set interfaces ethernet eth4 address '5.0.4.1/30'
+set interfaces ethernet eth4 address 'fd:0:0:504::1111/64'
+set interfaces ethernet eth4 disable
+set interfaces ethernet eth4 hw-id '50:19:1b:00:0d:04'
+set interfaces ethernet eth4 ipv6 address
+set interfaces ethernet eth4 mtu '8846'
+set interfaces ethernet eth5 address '5.0.5.1/30'
+set interfaces ethernet eth5 address 'fd:0:0:505::1111/64'
+set interfaces ethernet eth5 hw-id '50:19:1b:00:0d:05'
+set interfaces ethernet eth5 ipv6 address
+set interfaces ethernet eth5 mtu '8846'
+set interfaces ethernet eth6 address '5.0.6.1/30'
+set interfaces ethernet eth6 address 'fd:0:0:506::1111/64'
+set interfaces ethernet eth6 disable
+set interfaces ethernet eth6 hw-id '50:19:1b:00:0d:06'
+set interfaces ethernet eth6 ipv6 address
+set interfaces ethernet eth6 mtu '8846'
+set interfaces ethernet eth7 address '5.0.7.1/30'
+set interfaces ethernet eth7 address 'fd:0:0:507::1111/64'
+set interfaces ethernet eth7 disable
+set interfaces ethernet eth7 hw-id '50:19:1b:00:0d:07'
+set interfaces ethernet eth7 ipv6 address
+set interfaces ethernet eth7 mtu '8846'
+set interfaces ethernet eth8 address '5.0.8.1/30'
+set interfaces ethernet eth8 address 'fd:0:0:508::1111/64'
+set interfaces ethernet eth8 hw-id '50:19:1b:00:0d:08'
+set interfaces ethernet eth8 ipv6 address
+set interfaces ethernet eth8 mtu '8846'
+set interfaces loopback lo address '10.0.140.1/32'
+set interfaces loopback lo address 'fd:0:0:140::1111/64'
+set policy prefix-list6 route-redist-filtering6 rule 620 action 'permit'
+set policy prefix-list6 route-redist-filtering6 rule 620 ge '48'
+set policy prefix-list6 route-redist-filtering6 rule 620 prefix 'fd::/48'
+set protocols bgp address-family ipv4-unicast redistribute connected
+set protocols bgp address-family ipv4-unicast redistribute static
+set protocols bgp address-family ipv6-unicast network fd:0::/32
+set protocols bgp address-family ipv6-unicast redistribute connected
+set protocols bgp address-family ipv6-unicast redistribute static
+set protocols bgp listen range 10.100.101.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.102.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.103.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.104.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.105.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.106.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.107.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.108.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.100.109.0/24 peer-group 'dyn-peers-r0'
+set protocols bgp listen range 10.110.101.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.102.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.103.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.104.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.105.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.106.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.107.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.108.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.110.109.0/24 peer-group 'dyn-peers-r1'
+set protocols bgp listen range 10.120.101.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.102.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.103.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.104.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.105.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.106.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.107.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.108.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.120.109.0/24 peer-group 'dyn-peers-r2'
+set protocols bgp listen range 10.130.101.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.102.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.103.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.104.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.105.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.106.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.107.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.108.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp listen range 10.130.109.0/24 peer-group 'dyn-peers-r3'
+set protocols bgp neighbor 5.0.1.2 address-family ipv4-unicast addpath-tx-all
+set protocols bgp neighbor 5.0.1.2 remote-as '65010'
+set protocols bgp neighbor 5.0.1.2 solo
+set protocols bgp neighbor 5.0.1.2 timers holdtime '9'
+set protocols bgp neighbor 5.0.1.2 timers keepalive '3'
+set protocols bgp neighbor 5.0.1.2 update-source '5.0.1.1'
+set protocols bgp neighbor 5.0.2.2 address-family ipv4-unicast addpath-tx-all
+set protocols bgp neighbor 5.0.2.2 remote-as '65010'
+set protocols bgp neighbor 5.0.2.2 solo
+set protocols bgp neighbor 5.0.2.2 timers holdtime '9'
+set protocols bgp neighbor 5.0.2.2 timers keepalive '3'
+set protocols bgp neighbor 5.0.2.2 update-source '5.0.2.1'
+set protocols bgp neighbor 5.0.3.2 address-family ipv4-unicast addpath-tx-all
+set protocols bgp neighbor 5.0.3.2 address-family ipv4-unicast attribute-unchanged next-hop
+set protocols bgp neighbor 5.0.3.2 address-family ipv4-unicast default-originate
+set protocols bgp neighbor 5.0.3.2 address-family ipv4-unicast route-reflector-client
+set protocols bgp neighbor 5.0.3.2 remote-as '65003'
+set protocols bgp neighbor 5.0.3.2 solo
+set protocols bgp neighbor 5.0.3.2 timers holdtime '9'
+set protocols bgp neighbor 5.0.3.2 timers keepalive '3'
+set protocols bgp neighbor 5.0.3.2 update-source '5.0.3.1'
+set protocols bgp neighbor 5.0.4.2 address-family ipv4-unicast addpath-tx-all
+set protocols bgp neighbor 5.0.4.2 address-family ipv4-unicast attribute-unchanged next-hop
+set protocols bgp neighbor 5.0.4.2 address-family ipv4-unicast default-originate
+set protocols bgp neighbor 5.0.4.2 address-family ipv4-unicast route-reflector-client
+set protocols bgp neighbor 5.0.4.2 remote-as '65003'
+set protocols bgp neighbor 5.0.4.2 solo
+set protocols bgp neighbor 5.0.4.2 timers holdtime '9'
+set protocols bgp neighbor 5.0.4.2 timers keepalive '3'
+set protocols bgp neighbor 5.0.4.2 update-source '5.0.4.1'
+set protocols bgp neighbor 5.0.5.2 address-family ipv4-unicast addpath-tx-all
+set protocols bgp neighbor 5.0.5.2 address-family ipv4-unicast attribute-unchanged next-hop
+set protocols bgp neighbor 5.0.5.2 address-family ipv4-unicast default-originate
+set protocols bgp neighbor 5.0.5.2 address-family ipv4-unicast route-reflector-client
+set protocols bgp neighbor 5.0.5.2 remote-as '65003'
+set protocols bgp neighbor 5.0.5.2 solo
+set protocols bgp neighbor 5.0.5.2 timers holdtime '9'
+set protocols bgp neighbor 5.0.5.2 timers keepalive '3'
+set protocols bgp neighbor 5.0.5.2 update-source '5.0.5.1'
+set protocols bgp neighbor 5.0.6.2 address-family ipv4-unicast addpath-tx-all
+set protocols bgp neighbor 5.0.6.2 address-family ipv4-unicast attribute-unchanged next-hop
+set protocols bgp neighbor 5.0.6.2 address-family ipv4-unicast default-originate
+set protocols bgp neighbor 5.0.6.2 address-family ipv4-unicast route-reflector-client
+set protocols bgp neighbor 5.0.6.2 remote-as '65003'
+set protocols bgp neighbor 5.0.6.2 solo
+set protocols bgp neighbor 5.0.6.2 timers holdtime '9'
+set protocols bgp neighbor 5.0.6.2 timers keepalive '3'
+set protocols bgp neighbor 5.0.6.2 update-source '5.0.6.1'
+set protocols bgp neighbor 5.0.7.2 address-family ipv4-unicast addpath-tx-all
+set protocols bgp neighbor 5.0.7.2 address-family ipv4-unicast attribute-unchanged next-hop
+set protocols bgp neighbor 5.0.7.2 address-family ipv4-unicast default-originate
+set protocols bgp neighbor 5.0.7.2 address-family ipv4-unicast route-reflector-client
+set protocols bgp neighbor 5.0.7.2 remote-as '65003'
+set protocols bgp neighbor 5.0.7.2 solo
+set protocols bgp neighbor 5.0.7.2 timers holdtime '9'
+set protocols bgp neighbor 5.0.7.2 timers keepalive '3'
+set protocols bgp neighbor 5.0.7.2 update-source '5.0.7.1'
+set protocols bgp neighbor 5.0.8.2 address-family ipv4-unicast addpath-tx-all
+set protocols bgp neighbor 5.0.8.2 address-family ipv4-unicast attribute-unchanged next-hop
+set protocols bgp neighbor 5.0.8.2 address-family ipv4-unicast default-originate
+set protocols bgp neighbor 5.0.8.2 address-family ipv4-unicast route-reflector-client
+set protocols bgp neighbor 5.0.8.2 remote-as '65003'
+set protocols bgp neighbor 5.0.8.2 solo
+set protocols bgp neighbor 5.0.8.2 timers holdtime '9'
+set protocols bgp neighbor 5.0.8.2 timers keepalive '3'
+set protocols bgp neighbor 5.0.8.2 update-source '5.0.8.1'
+set protocols bgp parameters router-id '10.0.140.1'
+set protocols bgp peer-group dyn-peers-r0 address-family ipv4-unicast
+set protocols bgp peer-group dyn-peers-r0 ebgp-multihop '3'
+set protocols bgp peer-group dyn-peers-r0 passive
+set protocols bgp peer-group dyn-peers-r0 remote-as '64600'
+set protocols bgp peer-group dyn-peers-r0 update-source '10.0.140.1'
+set protocols bgp peer-group dyn-peers-r1 address-family ipv4-unicast
+set protocols bgp peer-group dyn-peers-r1 ebgp-multihop '3'
+set protocols bgp peer-group dyn-peers-r1 passive
+set protocols bgp peer-group dyn-peers-r1 remote-as '64600'
+set protocols bgp peer-group dyn-peers-r1 update-source '10.0.140.1'
+set protocols bgp peer-group dyn-peers-r2 address-family ipv4-unicast
+set protocols bgp peer-group dyn-peers-r2 ebgp-multihop '3'
+set protocols bgp peer-group dyn-peers-r2 passive
+set protocols bgp peer-group dyn-peers-r2 remote-as '64600'
+set protocols bgp peer-group dyn-peers-r2 update-source '10.0.140.1'
+set protocols bgp peer-group dyn-peers-r3 address-family ipv4-unicast
+set protocols bgp peer-group dyn-peers-r3 ebgp-multihop '3'
+set protocols bgp peer-group dyn-peers-r3 passive
+set protocols bgp peer-group dyn-peers-r3 remote-as '64600'
+set protocols bgp peer-group dyn-peers-r3 update-source '10.0.140.1'
+set protocols bgp system-as '65003'
+set protocols static route6 fe80::522c:99ff:fe00:902/128 interface eth5
+set service ntp allow-client address '0.0.0.0/0'
+set service ntp allow-client address '::/0'
+set service ntp server 0.pool.ntp.org
+set service ntp server 1.pool.ntp.org
+set service ntp server 2.pool.ntp.org
+set service ssh port '22'
+set system conntrack modules ftp
+set system conntrack modules h323
+set system conntrack modules nfs
+set system conntrack modules pptp
+set system conntrack modules sip
+set system conntrack modules sqlnet
+set system conntrack modules tftp
+set system console device ttyS0 speed '115200'
+set system host-name 'Spine-A'
+set system login user vyos authentication encrypted-password '$6$hL5MbeXxuSMY4hYP$EQDOB3g3xTQhZEt0zzqHXYwjR4y38KDXazGXjgZQhR3FBB6ZhwUQbDRXNNhGxEFSsAPZVzr0bwMCsZTw1d96B1'
+set system login user vyos authentication plaintext-password ''
+set system syslog global facility all level 'info'
+set system time-zone 'America/Denver'
+set vrf bind-to-all
+set vrf name oob protocols static route 0.0.0.0/0 next-hop 10.10.16.1 interface 'eth0'
+set vrf name oob table '100'

@@ -1,0 +1,42 @@
+# Terraform state files (contain sensitive computed values like billing accounts)
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Terraform working directory
+.terraform/
+.terraform.lock.hcl
+
+# Service Account Keys - NEVER commit these sensitive files
+SA-keys/
+*.json
+
+# Terraform plan files (may contain sensitive computed data)
+*.tfplan
+*.tfplan.*
+
+# Environment files with secrets
+.env
+.env.*
+
+# Only exclude tfvars files that contain actual secrets (not configuration)
+# terraform-gdc.auto.tfvars can be committed as it only contains config values
+# Add specific sensitive tfvars files here if needed:
+# secrets.tfvars
+# production.tfvars
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

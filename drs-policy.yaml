@@ -1,0 +1,21 @@
+constraint: constraints/iam.allowedPolicyMemberDomains
+listPolicy:
+  inheritFromParent: true
+  allowedValues:
+    - is:C00oe4dka
+    - is:C04hayrrf
+    - is:C03i4b1mc
+    - is:C03m3q4nk
+    - is:C024o5jnw
+    - is:C01pabg93
+    - is:C04cafwbh
+    - is:C00jeftrb
+    - is:C0411ffp5
+    - is:C01ncgc0r
+    - is:C00jeftrb
+    - is:C036k920f
+    - is:C03w1wcxd
+    - is:C03vdm1qn
+    - is:C01ln7av3
+    - is:C03f0626m
+    - is:C03f0626m

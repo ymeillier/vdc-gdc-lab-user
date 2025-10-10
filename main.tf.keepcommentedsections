@@ -1,0 +1,4112 @@
+# terraform version shows cloud shell version is outdated.
+# admin_@cloudshell:~/GDCv/GDCv-tf$ terraform version
+#   Terraform v1.5.7
+#   on linux_amd64
+#   Your version of Terraform is out of date! The latest version
+#   is 1.10.2. You can update by downloading from https://www.terraform.io/downloads.html
+
+# wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+# echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+# sudo apt update && sudo apt install terraform
+
+# admin_@cloudshell:~/GDCv/GDCv-tf$ terraform version
+#   Terraform v1.10.3
+#   on linux_amd64
+
+# cat >> ~/.bashrc << EOF
+# alias tf="terraform"
+# EOF
+
+# source ~/.bashrc
+
+# admin_@cs-173025914001-default:~/GDCv/vDC-tf$ gcloud projects list | grep -E 'vdc-tf'
+#   vdc-tf              vDC-tf            846229250908
+
+# Terraform Google provider:
+#   https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/gkeonprem_bare_metal_admin_cluster
+
+terraform {
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "6.14.1"
+    }
+    # random = { # Add the random provider
+    #   source  = "hashicorp/random"
+    #   version = "~> 3.0" # Or a compatible version constraint
+    # }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.0" # Or the latest version compatible with your Terraform version
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 1.0" # Or the latest version
+    }
+    external = {
+      source  = "registry.terraform.io/hashicorp/external"
+      version = ">= 2.0.0" # Replace with the desired version constraint
+    }
+  }
+}
+
+provider "google" {
+  # Configuration options
+  project = local.gcp-project
+  region  = local.gcp-region
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# resource "random_integer" "project_suffix" {
+#   min = 100000 # Minimum 6-digit number
+#   max = 999999 # Maximum 6-digit number
+# }
+
+
+
+
+
+
+
+# Define local variable (note: project created manually)
+locals {
+  #gcp-project-shortname = "vdc-tf"
+  gcp-orgid   = "1061229561493"
+  gcp-project = "vdc-tf"
+  #gcp-project        = "${local.gcp-project-shortname}-${random_integer.project_suffix.result"
+  gcp-region         = "us-central1"
+  gcp-zone           = "us-central1-a" # for GCE instances
+  gcp-project-number = "846229250908"
+  gce-sa             = "${local.gcp-project-number}-compute@developer.gserviceaccount.com"
+  cloudbuild-sa      = "${local.gcp-project-number}@cloudbuild.gserviceaccount.com"
+  user-account       = "admin@meillier.altostrat.com"
+  storagetransfer-sa = "project-${local.gcp-project-number}@storage-transfer-service.iam.gserviceaccount.com"
+  path-module = "~/GDCv/vDC-tf"
+  #add gce service account from ng-project that deploy containerlab (during tests) so that it can pull assets from the storage bucket from this project
+  gce-sa-eve-ng-368801 = "52711016403-compute@developer.gserviceaccount.com"
+
+  cloudbuild_sa_roles = toset([
+    "roles/compute.admin",
+    "roles/storage.admin",
+    "roles/iam.serviceAccountUser",
+    "roles/iam.serviceAccountTokenCreator",
+    "roles/compute.networkUser",
+    "roles/cloudbuild.builds.builder",
+  ])
+
+  gce_sa_roles = toset([
+    "roles/compute.admin",
+    "roles/iam.serviceAccountTokenCreator",
+    "roles/iam.serviceAccountUser",
+    "roles/compute.networkUser",
+    "roles/cloudbuild.builds.builder",
+    "roles/compute.storageAdmin",
+    "roles/storage.objectAdmin",
+    "roles/storage.admin",
+    "roles/storage.objectViewer",
+  ])
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Enable APIs
+resource "google_project_service" "cloudresourcemanager_googleapis_com" {
+  project            = local.gcp-project
+  service            = "cloudresourcemanager.googleapis.com"
+  disable_on_destroy = false # Set to true to disable on destroy
+}
+resource "google_project_service" "compute_googleapis_com" {
+  project            = local.gcp-project
+  service            = "compute.googleapis.com"
+  disable_on_destroy = false # Set to true to disable on destroy
+}
+
+resource "google_project_service" "serviceusage_googleapis_com" {
+  project            = local.gcp-project
+  service            = "serviceusage.googleapis.com"
+  disable_on_destroy = false # Set to true to disable on destroy
+}
+
+resource "google_project_service" "orgpolicy_googleapis_com" {
+  project            = local.gcp-project
+  service            = "orgpolicy.googleapis.com"
+  disable_on_destroy = false # Set to true to disable on destroy
+}
+
+# resource "google_project_service" "iap_api" {
+#   service            = "iap.googleapis.com"
+#   disable_on_destroy = false # Important: Prevents accidental disabling
+# }
+
+resource "google_project_service" "storage_api" {
+  project            = local.gcp-project
+  service            = "storage.googleapis.com"
+  disable_on_destroy = false # Set to true to disable on destroy
+}
+
+resource "google_project_service" "cloudbuild_api" {
+  project            = local.gcp-project
+  service            = "cloudbuild.googleapis.com"
+  disable_on_destroy = false # Set to true to disable on destroy
+}
+# [ypm: somehow going to the console teh cloud build api still had to be enabled.... ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# IAM Roles and Permissions
+
+# resource "local_file" "sas-file" {
+#   filename = "SAs.txt"
+#   content  = "${local.cloudbuild-sa}\n${local.gce-sa}"
+# }
+
+
+# Permissions needed by cloudbuild SA for the gcloud images export command:
+
+resource "google_project_iam_member" "compute_admin_cloudbuild_sa" {
+  project = local.gcp-project # Your project ID
+  role    = "roles/compute.admin"
+  member  = "serviceAccount:${local.cloudbuild-sa}"
+}
+
+resource "google_project_iam_member" "storage_admin_cloudbuild_sa" {
+  project = local.gcp-project
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:${local.cloudbuild-sa}"
+}
+
+resource "google_project_iam_member" "service_account_user_cloudbuild_sa" {
+  project = local.gcp-project # Your project ID
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${local.cloudbuild-sa}"
+}
+
+resource "google_project_iam_member" "service_account_token_creator_cloudbuild_sa" {
+  project = local.gcp-project # Your project ID
+  role    = "roles/iam.serviceAccountTokenCreator"
+  member  = "serviceAccount:${local.cloudbuild-sa}"
+}
+
+resource "google_project_iam_member" "service_account_net_user_cloudbuild_sa" {
+  project = local.gcp-project # Your project ID
+  role    = "roles/compute.networkUser"
+  member  = "serviceAccount:${local.cloudbuild-sa}"
+}
+
+resource "google_project_iam_member" "service_account_builder_cloudbuild_sa" {
+  project = local.gcp-project # Your project ID
+  role    = "roles/cloudbuild.builds.builder"
+  member  = "serviceAccount:${local.cloudbuild-sa}"
+}
+
+# assign to gce-sa in case use that instead of cloudbuild sa when exporting image (console does that)
+resource "google_project_iam_member" "compute_admin_gce_sa" {
+  project = local.gcp-project # Your project ID
+  role    = "roles/compute.admin"
+  member  = "serviceAccount:${local.gce-sa}"
+}
+
+resource "google_project_iam_member" "service_account_token_creator_gce_sa" {
+  project = local.gcp-project # Your project ID
+  role    = "roles/iam.serviceAccountTokenCreator"
+  member  = "serviceAccount:${local.gce-sa}"
+}
+
+resource "google_project_iam_member" "service_account_user_gce_sa" {
+  project = local.gcp-project # Your project ID
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${local.gce-sa}"
+}
+
+resource "google_project_iam_member" "service_account_net_user_gce_sa" {
+  project = local.gcp-project # Your project ID
+  role    = "roles/compute.networkUser"
+  member  = "serviceAccount:${local.gce-sa}"
+}
+
+resource "google_project_iam_member" "service_account_builder_gce_sa" {
+  project = local.gcp-project # Your project ID
+  role    = "roles/cloudbuild.builds.builder"
+  member  = "serviceAccount:${local.gce-sa}"
+}
+
+# Permissions needed by the default gce SA for the gcloud images export command:
+# https://cloud.google.com/compute/docs/import/requirements-export-import-images#required-roles-compute-sa
+
+resource "google_project_iam_member" "compute_storage_admin_gce_sa" {
+  project = local.gcp-project
+  role    = "roles/compute.storageAdmin"
+  member  = "serviceAccount:${local.gce-sa}"
+}
+
+resource "google_project_iam_member" "storage_object_admin_gce_sa" {
+  project = local.gcp-project
+  role    = "roles/storage.objectAdmin"
+  member  = "serviceAccount:${local.gce-sa}"
+}
+
+resource "google_project_iam_member" "storage_admin_gce_sa" {
+  project = local.gcp-project
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:${local.gce-sa}"
+}
+
+
+resource "google_project_iam_member" "storage_object_viewer_gce_sa" {
+  project = local.gcp-project
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${local.gce-sa}"
+}
+
+
+
+# User permission per https://cloud.google.com/compute/docs/import/requirements-export-import-images#grant-user-account-role
+
+resource "google_project_iam_member" "storage_admin_user" {
+  project = local.gcp-project
+  role    = "roles/storage.admin"
+  member  = "user:${local.user-account}"
+}
+
+resource "google_project_iam_member" "viewer_gce_user" {
+  project = local.gcp-project
+  role    = "roles/viewer"
+  member  = "user:${local.user-account}"
+}
+
+resource "google_project_iam_member" "projectiamadmin_user" {
+  project = local.gcp-project
+  role    = "roles/resourcemanager.projectIamAdmin"
+  member  = "user:${local.user-account}"
+}
+
+resource "google_project_iam_member" "cloudbuildeditor_user" {
+  project = local.gcp-project
+  role    = "roles/cloudbuild.builds.editor"
+  member  = "user:${local.user-account}"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/google_project
+
+# resource "google_project" "project" {
+#   auto_create_network = true
+#   name                = local.gcp-project
+#   org_id              = local.gcp-orgid
+#   project_id          = local.gcp-project
+# }
+
+# data "google_project" "project_data" {
+#   project_id = google_project.project.project_id
+#   depends_on = [google_project.project] # Crucial: Ensures project exists first
+# }
+
+# output "project_number" {
+#   value = data.google_project.project_data.number
+# }
+
+# output "project_id_output" {
+#   value = data.google_project.project_data.id
+# }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# # org policy: compute.requireShieldedVm
+resource "google_org_policy_policy" "compute_requireShieldedVm" {
+  name   = "projects/${local.gcp-project}/policies/compute.requireShieldedVm"
+  parent = "projects/${local.gcp-project}"
+
+  spec {
+    rules {
+      enforce = "FALSE"
+    }
+  }
+  depends_on = [google_project_service.orgpolicy_googleapis_com]
+}
+
+
+
+# # org policy: vmCanIpForward
+resource "google_org_policy_policy" "compute_vmCanIpForward" {
+  name   = "projects/${local.gcp-project}/policies/compute.vmCanIpForward"
+  parent = "projects/${local.gcp-project}"
+  spec {
+    rules {
+      allow_all = "TRUE"
+    }
+  }
+  depends_on = [google_project_service.orgpolicy_googleapis_com]
+}
+
+# ## org policy: vmExternalIpAccess
+resource "google_org_policy_policy" "compute_vmExternalIpAccess" {
+  name   = "projects/${local.gcp-project}/policies/compute.vmExternalIpAccess"
+  parent = "projects/${local.gcp-project}"
+  spec {
+    rules {
+      allow_all = "TRUE"
+    }
+  }
+  depends_on = [google_project_service.orgpolicy_googleapis_com]
+}
+
+
+# ## org policy: disableSerialPortAccess
+resource "google_org_policy_policy" "compute_disableSerialPortAccess" {
+  name   = "projects/${local.gcp-project}/policies/compute.disableSerialPortAccess"
+  parent = "projects/${local.gcp-project}"
+  spec {
+    rules {
+      enforce = "FALSE"
+    }
+  }
+  depends_on = [google_project_service.orgpolicy_googleapis_com]
+}
+
+
+
+# ## org policy: requireOsLogin
+resource "google_org_policy_policy" "compute_requireOsLogin" {
+  name   = "projects/${local.gcp-project}/policies/compute.requireOsLogin"
+  parent = "projects/${local.gcp-project}"
+  spec {
+    rules {
+      enforce = "FALSE"
+    }
+  }
+  depends_on = [google_project_service.orgpolicy_googleapis_com]
+}
+
+
+# ## org policy: disableNestedVirtualization
+resource "google_org_policy_policy" "compute_disableNestedVirtualization" {
+  name   = "projects/${local.gcp-project}/policies/compute.disableNestedVirtualization"
+  parent = "projects/${local.gcp-project}"
+  spec {
+    rules {
+      enforce = "FALSE"
+    }
+  }
+  depends_on = [google_project_service.orgpolicy_googleapis_com]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# VPC Networks
+
+# Main subnet will be 10.10.10.0/24 - pnet server mgmt ip will be on that subnet.
+# Each servers deployed on the service rack, border rack, rack 1, 2, 3, 4 have a mgmt IP in VPC1. 
+# However in order to differentiate servers ips by rack location, we use the same ip addressing convention
+# used for VTEP/underlay networks
+# A server on rack 1 vlan 101 (101-109 allowed only) will have a mgmt ip on 10.10.1XL.IP where X is the rack id and L the vlan id so:
+# - 10.10.115.10 would be a server on rack 1 vlan 105. 
+# - 10.10.123.10 would be a server on rack 2 vlan 103. 
+# - 10.10.123.10 would be a server on rack 2 vlan 103. 
+# - 10.10.103.10 would be a server on rack 0 (border) vlan 103. 
+# - 10.10.94.10 would be a server on rack 99 (service rack) vlan 104. 
+# Because the vlan ID is a single digit in that convention, we can only have 9 vlans (I guess could have added 0 for the 0th vlan but script would need to accomodate that)
+# an improvement would be to use 
+# 10.1.122.x for rack 1 vlan 122. 
+# 10.99.122.x for rack 99 (svc) vlan 122. 
+# 10.22.122.x for rack 22 vlan 122. 
+# The idea though was to preserver the 10/8 address space to VPC infra address and avoid potential conflicts across VPC (if was peering)
+# With this addressing schema we know that 10.10/16 and 10.40/16 is reserved
+
+
+
+# Default vpc network: Required by gcloud compute images export: in console, doing the export, failed because of lack of global 'Default' network
+# [image-export]: 2025-01-06T16:15:04Z Validation of network "projects/vdc-tf/global/networks/default" failed: googleapi: Error 404: The resource 'projects/vdc-tf/global/networks/default' was not found, notFound
+resource "google_compute_network" "vdc_default" {
+  auto_create_subnetworks                   = true
+  mtu                                       = 8896
+  name                                      = "default"
+  network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
+  project                                   = local.gcp-project
+  routing_mode                              = "GLOBAL"
+
+  depends_on = [google_project_service.compute_googleapis_com]
+}
+
+
+# vpc1: Management Network (NIC0): cloud0/oob/pnet0
+resource "google_compute_network" "vdc_vpc1" {
+  auto_create_subnetworks                   = false
+  mtu                                       = 8896
+  name                                      = "vdc-vpc1"
+  network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
+  project                                   = local.gcp-project
+  routing_mode                              = "REGIONAL"
+
+  depends_on = [google_project_service.compute_googleapis_com]
+}
+
+
+# vpc2: Cloud1 / pnet1 interface (will be the network used by pnetlab vRouters uplinks to Internet/NAT-network)
+resource "google_compute_network" "vdc_vpc2" {
+  auto_create_subnetworks                   = false
+  mtu                                       = 8896
+  name                                      = "vdc-vpc2"
+  network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
+  project                                   = local.gcp-project
+  routing_mode                              = "REGIONAL"
+
+  depends_on = [google_project_service.compute_googleapis_com]
+}
+
+
+# vpc3: Cloud2 / pnet2 interface (unused)
+resource "google_compute_network" "vdc_vpc3" {
+  auto_create_subnetworks                   = false
+  mtu                                       = 8896
+  name                                      = "vdc-vpc3"
+  network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
+  project                                   = local.gcp-project
+  routing_mode                              = "REGIONAL"
+
+  depends_on = [google_project_service.compute_googleapis_com]
+}
+
+
+# vpc4: Underlay NIC1 (Fabric Leg-A): Cloud3 / pnet3 
+resource "google_compute_network" "vdc_vpc4" {
+  auto_create_subnetworks                   = false
+  mtu                                       = 8896
+  name                                      = "vdc-vpc4"
+  network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
+  project                                   = local.gcp-project
+  routing_mode                              = "REGIONAL"
+
+  depends_on = [google_project_service.compute_googleapis_com]
+}
+
+# vpc5: Underlay NIC2 (for dual nic servers, fabric Leg-B) - cloud4 / pnet4
+resource "google_compute_network" "vdc_vpc5" {
+  auto_create_subnetworks                   = false
+  mtu                                       = 8896
+  name                                      = "vdc-vpc5"
+  network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
+  project                                   = local.gcp-project
+  routing_mode                              = "REGIONAL"
+
+  depends_on = [google_project_service.compute_googleapis_com]
+}
+
+# vpc6: Cloud5 / pnet5 interface (unused)
+resource "google_compute_network" "vdc_vpc6" {
+  auto_create_subnetworks                   = false
+  mtu                                       = 8896
+  name                                      = "vdc-vpc6"
+  network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
+  project                                   = local.gcp-project
+  routing_mode                              = "REGIONAL"
+
+  depends_on = [google_project_service.compute_googleapis_com]
+}
+
+
+# vpc7: Cloud6 / pnet6 interface (WAN with pub IP for vyos uplink / vpn-A)
+resource "google_compute_network" "vdc_vpc7" {
+  auto_create_subnetworks                   = false
+  mtu                                       = 8896
+  name                                      = "vdc-vpc7"
+  network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
+  project                                   = local.gcp-project
+  routing_mode                              = "REGIONAL"
+
+  depends_on = [google_project_service.compute_googleapis_com]
+}
+
+# vpc8: Cloud7 / pnet7 interface (WAN with pub IP for vyos uplink / vpn-B)
+resource "google_compute_network" "vdc_vpc8" {
+  auto_create_subnetworks                   = false
+  mtu                                       = 8896
+  name                                      = "vdc-vpc8"
+  network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
+  project                                   = local.gcp-project
+  routing_mode                              = "REGIONAL"
+
+  depends_on = [google_project_service.compute_googleapis_com]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Subnetworks for each VPC 
+
+
+# VPC1 subnets (servers management network)
+
+resource "google_compute_subnetwork" "vdc_vpc1_net_10" {
+  ip_cidr_range              = "10.10.10.0/24"
+  name                       = "vdc-vpc1-net-10"
+  network                    = google_compute_network.vdc_vpc1.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+
+  # Used for routers oob interfaces.
+  secondary_ip_range {
+    ip_cidr_range = "10.10.15.0/24"
+    range_name    = "secondary-vpc1-net-10-15"
+  }
+
+  # unused.
+  secondary_ip_range {
+    ip_cidr_range = "10.10.16.0/24"
+    range_name    = "secondary-vpc1-net-10-16"
+  }
+
+
+  stack_type = "IPV4_ONLY"
+}
+
+
+locals {
+  subnets-vpc1-rs = {
+    "90" = "10.10.90.0/24",
+    "91" = "10.10.91.0/24",
+    "92" = "10.10.92.0/24",
+    "93" = "10.10.93.0/24",
+    "94" = "10.10.94.0/24",
+    "95" = "10.10.95.0/24",
+    "96" = "10.10.96.0/24",
+    "97" = "10.10.97.0/24",
+    "98" = "10.10.98.0/24",
+    "99" = "10.10.99.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc1_net_rs" {
+  for_each = local.subnets-vpc1-rs
+  ip_cidr_range = each.value
+  name          = "vdc-vpc1-net-rs-10-${each.key}"
+  network                    = google_compute_network.vdc_vpc1.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+locals {
+  subnets-vpc1-r0 = {
+    "100" = "10.10.100.0/24",
+    "101" = "10.10.101.0/24",
+    "102" = "10.10.102.0/24",
+    "103" = "10.10.103.0/24",
+    "104" = "10.10.104.0/24",
+    "105" = "10.10.105.0/24",
+    "106" = "10.10.106.0/24",
+    "107" = "10.10.107.0/24",
+    "108" = "10.10.108.0/24",
+    "109" = "10.10.109.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc1_net_r0" {
+  for_each = local.subnets-vpc1-r0
+  ip_cidr_range = each.value
+  name          = "vdc-vpc1-net-r0-10-${each.key}"
+  network                    = google_compute_network.vdc_vpc1.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+locals {
+  subnets-vpc1-r1 = {
+    "110" = "10.10.110.0/24",
+    "111" = "10.10.111.0/24",
+    "112" = "10.10.112.0/24",
+    "113" = "10.10.113.0/24",
+    "114" = "10.10.114.0/24",
+    "115" = "10.10.115.0/24",
+    "116" = "10.10.116.0/24",
+    "117" = "10.10.117.0/24",
+    "118" = "10.10.118.0/24",
+    "119" = "10.10.119.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc1_net_r1" {
+  for_each = local.subnets-vpc1-r1
+  ip_cidr_range = each.value
+  name          = "vdc-vpc1-net-r1-10-${each.key}"
+  network                    = google_compute_network.vdc_vpc1.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+locals {
+  subnets-vpc1-r2 = {
+    "120" = "10.10.120.0/24",
+    "121" = "10.10.121.0/24",
+    "122" = "10.10.122.0/24",
+    "123" = "10.10.123.0/24",
+    "124" = "10.10.124.0/24",
+    "125" = "10.10.125.0/24",
+    "126" = "10.10.126.0/24",
+    "127" = "10.10.127.0/24",
+    "128" = "10.10.128.0/24",
+    "129" = "10.10.129.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc1_net_r2" {
+  for_each = local.subnets-vpc1-r2
+  ip_cidr_range = each.value
+  name          = "vdc-vpc1-net-r2-10-${each.key}"
+  network                    = google_compute_network.vdc_vpc1.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+locals {
+  subnets-vpc1-r3 = {
+    "130" = "10.10.130.0/24",
+    "131" = "10.10.131.0/24",
+    "132" = "10.10.132.0/24",
+    "133" = "10.10.133.0/24",
+    "134" = "10.10.134.0/24",
+    "135" = "10.10.135.0/24",
+    "136" = "10.10.136.0/24",
+    "137" = "10.10.137.0/24",
+    "138" = "10.10.138.0/24",
+    "139" = "10.10.139.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc1_net_r3" {
+  for_each = local.subnets-vpc1-r3
+  ip_cidr_range = each.value
+  name          = "vdc-vpc1-net-r3-10-${each.key}"
+  network                    = google_compute_network.vdc_vpc1.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+
+locals {
+  subnets-vpc1-r4 = {
+    "130" = "10.10.140.0/24",
+    "131" = "10.10.141.0/24",
+    "132" = "10.10.142.0/24",
+    "133" = "10.10.143.0/24",
+    "134" = "10.10.144.0/24",
+    "135" = "10.10.145.0/24",
+    "136" = "10.10.146.0/24",
+    "137" = "10.10.147.0/24",
+    "138" = "10.10.148.0/24",
+    "139" = "10.10.149.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc1_net_r4" {
+  for_each = local.subnets-vpc1-r4
+  ip_cidr_range = each.value
+  name          = "vdc-vpc1-net-r4-10-${each.key}"
+  network                    = google_compute_network.vdc_vpc1.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+
+
+
+
+resource "google_compute_subnetwork" "vdc_vpc2_net_20" {
+  ip_cidr_range              = "10.10.20.0/24"
+  name                       = "vdc-vpc2-net-20"
+  network                    = google_compute_network.vdc_vpc2.id
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+
+  secondary_ip_range {
+    ip_cidr_range = "10.10.25.0/24"
+    range_name    = "secondary-vpc2-net-20-25"
+  }
+  secondary_ip_range {
+    ip_cidr_range = "10.10.26.0/24"
+    range_name    = "secondary-vpc2-net-20-26"
+  }
+
+  stack_type = "IPV4_ONLY"
+}
+
+resource "google_compute_subnetwork" "vdc_vpc3_net_30" {
+  ip_cidr_range              = "10.10.30.0/24"
+  name                       = "vdc-vpc3-net-30"
+  network                    = google_compute_network.vdc_vpc3.id
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+
+  secondary_ip_range {
+    ip_cidr_range = "10.10.35.0/24"
+    range_name    = "secondary-vpc3-net-30-35"
+  }
+  secondary_ip_range {
+    ip_cidr_range = "10.10.36.0/24"
+    range_name    = "secondary-vpc3-net-30-36"
+  }
+
+  stack_type = "IPV4_ONLY"
+}
+
+
+resource "google_compute_subnetwork" "vdc_vpc4_net_40" {
+  ip_cidr_range              = "10.10.40.0/24"
+  name                       = "vdc-vpc4-net-40"
+  network                    = google_compute_network.vdc_vpc4.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+
+  # Used for routers oob interfaces.
+  secondary_ip_range {
+    ip_cidr_range = "10.10.45.0/24"
+    range_name    = "secondary-vpc4-net-40-45"
+  }
+  secondary_ip_range {
+    ip_cidr_range = "10.10.46.0/24"
+    range_name    = "secondary-vpc4-net-40-46"
+  }
+  stack_type = "IPV4_ONLY"
+}
+
+
+locals {
+  subnets-vpc4-rs = {
+    "90" = "10.40.90.0/24",
+    "91" = "10.40.91.0/24",
+    "92" = "10.40.92.0/24",
+    "93" = "10.40.93.0/24",
+    "94" = "10.40.94.0/24",
+    "95" = "10.40.95.0/24",
+    "96" = "10.40.96.0/24",
+    "97" = "10.40.97.0/24",
+    "98" = "10.40.98.0/24",
+    "99" = "10.40.99.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc4_net_rs" {
+  for_each = local.subnets-vpc4-rs
+
+  ip_cidr_range              = each.value
+  name                       = "vdc-vpc4-net-rs-40-${each.key}"
+  network                    = google_compute_network.vdc_vpc4.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+locals {
+  subnets-vpc4-r0 = {
+    "100" = "10.40.100.0/24",
+    "101" = "10.40.101.0/24",
+    "102" = "10.40.102.0/24",
+    "103" = "10.40.103.0/24",
+    "104" = "10.40.104.0/24",
+    "105" = "10.40.105.0/24",
+    "106" = "10.40.106.0/24",
+    "107" = "10.40.107.0/24",
+    "108" = "10.40.108.0/24",
+    "109" = "10.40.109.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc4_net_r0" {
+  for_each = local.subnets-vpc4-r0
+
+  ip_cidr_range              = each.value
+  name                       = "vdc-vpc4-net-r0-40-${each.key}"
+  network                    = google_compute_network.vdc_vpc4.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+
+locals {
+  subnets-vpc4-r1 = {
+    "110" = "10.40.110.0/24",
+    "111" = "10.40.111.0/24",
+    "112" = "10.40.112.0/24",
+    "113" = "10.40.113.0/24",
+    "114" = "10.40.114.0/24",
+    "115" = "10.40.115.0/24",
+    "116" = "10.40.116.0/24",
+    "117" = "10.40.117.0/24",
+    "118" = "10.40.118.0/24",
+    "119" = "10.40.119.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc4_net_r1" {
+  for_each = local.subnets-vpc4-r1
+
+  ip_cidr_range              = each.value
+  name                       = "vdc-vpc4-net-r1-40-${each.key}"
+  network                    = google_compute_network.vdc_vpc4.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+locals {
+  subnets-vpc4-r2 = {
+    "120" = "10.40.120.0/24",
+    "121" = "10.40.121.0/24",
+    "122" = "10.40.122.0/24",
+    "123" = "10.40.123.0/24",
+    "124" = "10.40.124.0/24",
+    "125" = "10.40.125.0/24",
+    "126" = "10.40.126.0/24",
+    "127" = "10.40.127.0/24",
+    "128" = "10.40.128.0/24",
+    "129" = "10.40.129.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc4_net_r2" {
+  for_each = local.subnets-vpc4-r2
+
+  ip_cidr_range              = each.value
+  name                       = "vdc-vpc4-net-r2-40-${each.key}"
+  network                    = google_compute_network.vdc_vpc4.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+locals {
+  subnets-vpc4-r3 = {
+    "130" = "10.40.130.0/24",
+    "131" = "10.40.131.0/24",
+    "132" = "10.40.132.0/24",
+    "133" = "10.40.133.0/24",
+    "134" = "10.40.134.0/24",
+    "135" = "10.40.135.0/24",
+    "136" = "10.40.136.0/24",
+    "137" = "10.40.137.0/24",
+    "138" = "10.40.138.0/24",
+    "139" = "10.40.139.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc4_net_r3" {
+  for_each = local.subnets-vpc4-r3
+
+  ip_cidr_range              = each.value
+  name                       = "vdc-vpc4-net-r3-40-${each.key}"
+  network                    = google_compute_network.vdc_vpc4.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+
+locals {
+  subnets-vpc4-r4 = {
+    "140" = "10.40.140.0/24",
+    "141" = "10.40.141.0/24",
+    "142" = "10.40.142.0/24",
+    "143" = "10.40.143.0/24",
+    "144" = "10.40.144.0/24",
+    "145" = "10.40.145.0/24",
+    "146" = "10.40.146.0/24",
+    "147" = "10.40.147.0/24",
+    "148" = "10.40.148.0/24",
+    "149" = "10.40.149.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc4_net_r4" {
+  for_each = local.subnets-vpc4-r4
+
+  ip_cidr_range              = each.value
+  name                       = "vdc-vpc4-net-r4-40-${each.key}"
+  network                    = google_compute_network.vdc_vpc4.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+
+
+
+resource "google_compute_subnetwork" "vdc_vpc5_net_50" {
+  ip_cidr_range              = "10.10.50.0/24"
+  name                       = "vdc-vpc5-net-50"
+  network                    = google_compute_network.vdc_vpc5.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+
+  # Used for routers oob interfaces.
+  secondary_ip_range {
+    ip_cidr_range = "10.10.55.0/24"
+    range_name    = "secondary-vpc5-net-50-55"
+  }
+  secondary_ip_range {
+    ip_cidr_range = "10.10.56.0/24"
+    range_name    = "secondary-vpc5-net-50-56"
+  }
+  stack_type = "IPV4_ONLY"
+}
+
+locals {
+  subnets-vpc5-rs = {
+    "90" = "10.50.90.0/24",
+    "91" = "10.50.91.0/24",
+    "92" = "10.50.92.0/24",
+    "93" = "10.50.93.0/24",
+    "94" = "10.50.94.0/24",
+    "95" = "10.50.95.0/24",
+    "96" = "10.50.96.0/24",
+    "97" = "10.50.97.0/24",
+    "98" = "10.50.98.0/24",
+    "99" = "10.50.99.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc5_net_rs" {
+  for_each = local.subnets-vpc5-rs
+
+  ip_cidr_range              = each.value
+  name                       = "vdc-vpc5-net-rs-50-${each.key}"
+  network                    = google_compute_network.vdc_vpc5.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+locals {
+  subnets-vpc5-r0 = {
+    "100" = "10.50.100.0/24",
+    "101" = "10.50.101.0/24",
+    "102" = "10.50.102.0/24",
+    "103" = "10.50.103.0/24",
+    "104" = "10.50.104.0/24",
+    "105" = "10.50.105.0/24",
+    "106" = "10.50.106.0/24",
+    "107" = "10.50.107.0/24",
+    "108" = "10.50.108.0/24",
+    "109" = "10.50.109.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc5_net_r0" {
+  for_each = local.subnets-vpc5-r0
+
+  ip_cidr_range              = each.value
+  name                       = "vdc-vpc5-net-r0-50-${each.key}"
+  network                    = google_compute_network.vdc_vpc5.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+
+locals {
+  subnets-vpc5-r1 = {
+    "110" = "10.50.110.0/24",
+    "111" = "10.50.111.0/24",
+    "112" = "10.50.112.0/24",
+    "113" = "10.50.113.0/24",
+    "114" = "10.50.114.0/24",
+    "115" = "10.50.115.0/24",
+    "116" = "10.50.116.0/24",
+    "117" = "10.50.117.0/24",
+    "118" = "10.50.118.0/24",
+    "119" = "10.50.119.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc5_net_r1" {
+  for_each = local.subnets-vpc5-r1
+
+  ip_cidr_range              = each.value
+  name                       = "vdc-vpc5-net-r1-50-${each.key}"
+  network                    = google_compute_network.vdc_vpc5.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+locals {
+  subnets-vpc5-r2 = {
+    "120" = "10.50.120.0/24",
+    "121" = "10.50.121.0/24",
+    "122" = "10.50.122.0/24",
+    "123" = "10.50.123.0/24",
+    "124" = "10.50.124.0/24",
+    "125" = "10.50.125.0/24",
+    "126" = "10.50.126.0/24",
+    "127" = "10.50.127.0/24",
+    "128" = "10.50.128.0/24",
+    "129" = "10.50.129.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc5_net_r2" {
+  for_each = local.subnets-vpc5-r2
+
+  ip_cidr_range              = each.value
+  name                       = "vdc-vpc5-net-r2-50-${each.key}"
+  network                    = google_compute_network.vdc_vpc5.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+locals {
+  subnets-vpc5-r3 = {
+    "130" = "10.50.130.0/24",
+    "131" = "10.50.131.0/24",
+    "132" = "10.50.132.0/24",
+    "133" = "10.50.133.0/24",
+    "134" = "10.50.134.0/24",
+    "135" = "10.50.135.0/24",
+    "136" = "10.50.136.0/24",
+    "137" = "10.50.137.0/24",
+    "138" = "10.50.138.0/24",
+    "139" = "10.50.139.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc5_net_r3" {
+  for_each = local.subnets-vpc5-r3
+
+  ip_cidr_range              = each.value
+  name                       = "vdc-vpc5-net-r3-50-${each.key}"
+  network                    = google_compute_network.vdc_vpc5.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+
+locals {
+  subnets-vpc5-r4 = {
+    "140" = "10.50.140.0/24",
+    "141" = "10.50.141.0/24",
+    "142" = "10.50.142.0/24",
+    "143" = "10.50.143.0/24",
+    "144" = "10.50.144.0/24",
+    "145" = "10.50.145.0/24",
+    "146" = "10.50.146.0/24",
+    "147" = "10.50.147.0/24",
+    "148" = "10.50.148.0/24",
+    "149" = "10.50.149.0/24",
+  }
+}
+resource "google_compute_subnetwork" "vdc_vpc5_net_r4" {
+  for_each = local.subnets-vpc5-r4
+
+  ip_cidr_range              = each.value
+  name                       = "vdc-vpc5-net-r4-50-${each.key}"
+  network                    = google_compute_network.vdc_vpc5.id
+  private_ip_google_access   = true
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+  stack_type                 = "IPV4_ONLY"
+}
+
+
+
+
+
+
+resource "google_compute_subnetwork" "vdc_vpc6_net_60" {
+  ip_cidr_range              = "10.10.60.0/24"
+  name                       = "vdc-vpc6-net-60"
+  network                    = google_compute_network.vdc_vpc6.id
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+
+  secondary_ip_range {
+    ip_cidr_range = "10.10.65.0/24"
+    range_name    = "secondary-vpc6-net-60-65"
+  }
+  secondary_ip_range {
+    ip_cidr_range = "10.10.66.0/24"
+    range_name    = "secondary-vpc6-net-60-66"
+  }
+  stack_type = "IPV4_ONLY"
+}
+
+resource "google_compute_subnetwork" "vdc_vpc7_net_70" {
+  ip_cidr_range              = "10.10.70.0/24"
+  name                       = "vdc-vpc7-net-70"
+  network                    = google_compute_network.vdc_vpc7.id
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+
+  secondary_ip_range {
+    ip_cidr_range = "10.10.75.0/24"
+    range_name    = "secondary-vpc7-net-70-75"
+  }
+  secondary_ip_range {
+    ip_cidr_range = "10.10.76.0/24"
+    range_name    = "secondary-vpc7-net-70-76"
+  }
+  stack_type = "IPV4_ONLY"
+}
+
+
+resource "google_compute_subnetwork" "vdc_vpc8_net_80" {
+  ip_cidr_range              = "10.10.80.0/24"
+  name                       = "vdc-vpc8-net-80"
+  network                    = google_compute_network.vdc_vpc8.id
+  private_ipv6_google_access = "DISABLE_GOOGLE_ACCESS"
+  project                    = local.gcp-project
+  purpose                    = "PRIVATE"
+  region                     = local.gcp-region
+
+  secondary_ip_range {
+    ip_cidr_range = "10.10.85.0/24"
+    range_name    = "secondary-vpc8-net-80-85"
+  }
+  secondary_ip_range {
+    ip_cidr_range = "10.10.86.0/24"
+    range_name    = "secondary-vpc8-net-80-86"
+  }
+  stack_type = "IPV4_ONLY"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# FIREWALL
+
+# vpc1 firewall
+resource "google_compute_firewall" "ingress_all_vpc1" {
+  allow {
+    protocol = "all"
+  }
+  direction     = "INGRESS"
+  name          = "ingress-all-vpc1"
+  network       = google_compute_network.vdc_vpc1.id
+  priority      = 999
+  project       = local.gcp-project
+  source_ranges = ["0.0.0.0/0"]
+}
+
+# resource "google_compute_firewall" "ingress_pnet_ui" {
+#   allow {
+#     ports    = ["0-65535"]
+#     protocol = "tcp"
+#   }
+
+#   direction     = "INGRESS"
+#   name          = "ingress-pnet-ui"
+#   network       = google_compute_network.vdc_vpc1.id
+#   priority      = 1000
+#   project       = local.gcp-project
+#   source_ranges = ["0.0.0.0/0"]
+# }
+
+# resource "google_compute_firewall" "vdc_vpc1_allow_http" {
+#   allow {
+#     ports    = ["80"]
+#     protocol = "tcp"
+#   }
+
+#   direction     = "INGRESS"
+#   name          = "vdc-vpc1-allow-http"
+#   network       = google_compute_network.vdc_vpc1.id
+#   priority      = 1000
+#   project       = local.gcp-project
+#   source_ranges = ["0.0.0.0/0"]
+#   target_tags   = ["http-server"]
+# }
+
+# resource "google_compute_firewall" "vdc_vpc1_allow_icmp" {
+#   allow {
+#     protocol = "icmp"
+#   }
+
+#   description   = "Allows ICMP connections from any source to any instance on the network."
+#   direction     = "INGRESS"
+#   name          = "vdc-vpc1-allow-icmp"
+#   network       = google_compute_network.vdc_vpc1.id
+#   priority      = 65534
+#   project       = local.gcp-project
+#   source_ranges = ["0.0.0.0/0"]
+# }
+
+# resource "google_compute_firewall" "vdc_vpc1_allow_rdp" {
+#   allow {
+#     ports    = ["3389"]
+#     protocol = "tcp"
+#   }
+
+#   description   = "Allows RDP connections from any source to any instance on the network using port 3389."
+#   direction     = "INGRESS"
+#   name          = "vdc-vpc1-allow-rdp"
+#   network       = google_compute_network.vdc_vpc1.id
+#   priority      = 65534
+#   project       = local.gcp-project
+#   source_ranges = ["0.0.0.0/0"]
+# }
+
+# resource "google_compute_firewall" "vdc_vpc1_allow_ssh" {
+#   allow {
+#     ports    = ["22"]
+#     protocol = "tcp"
+#   }
+
+#   description   = "Allows TCP connections from any source to any instance on the network using port 22."
+#   direction     = "INGRESS"
+#   name          = "vdc-vpc1-allow-ssh"
+#   network       = google_compute_network.vdc_vpc1.id
+#   priority      = 65534
+#   project       = local.gcp-project
+#   source_ranges = ["0.0.0.0/0"]
+# }
+
+# resource "google_compute_firewall" "vdc_vpc1_allow_custom" {
+#   allow {
+#     protocol = "all"
+#   }
+
+#   description   = "Allows connection from any source to any instance on the network using custom protocols."
+#   direction     = "INGRESS"
+#   name          = "vdc-vpc1-allow-custom"
+#   network       = google_compute_network.vdc_vpc1.id
+#   priority      = 65534
+#   project       = local.gcp-project
+#   source_ranges = ["10.10.10.0/24"]
+# }
+
+
+resource "google_compute_firewall" "egress_all_vpc1" {
+  allow {
+    protocol = "all"
+  }
+
+  destination_ranges = ["0.0.0.0/0"]
+  direction          = "EGRESS"
+  name               = "egress-all-vpc1"
+  network            = google_compute_network.vdc_vpc1.id
+  priority           = 999
+  project            = local.gcp-project
+}
+
+
+# vpc4 firewall
+resource "google_compute_firewall" "ingress_all_vpc4" {
+  allow {
+    protocol = "all"
+  }
+  direction     = "INGRESS"
+  name          = "ingress-all-vpc4"
+  network       = google_compute_network.vdc_vpc4.id
+  priority      = 999
+  project       = local.gcp-project
+  source_ranges = ["0.0.0.0/0"]
+}
+
+resource "google_compute_firewall" "egress_all_vpc4" {
+  allow {
+    protocol = "all"
+  }
+
+  destination_ranges = ["0.0.0.0/0"]
+  direction          = "EGRESS"
+  name               = "egress-all-vpc4"
+  network            = google_compute_network.vdc_vpc4.id
+  priority           = 999
+  project            = local.gcp-project
+}
+
+
+
+# vpc5 firewall
+resource "google_compute_firewall" "ingress_all_vpc5" {
+  allow {
+    protocol = "all"
+  }
+  direction     = "INGRESS"
+  name          = "ingress-all-vpc5"
+  network       = google_compute_network.vdc_vpc5.id
+  priority      = 999
+  project       = local.gcp-project
+  source_ranges = ["0.0.0.0/0"]
+}
+
+resource "google_compute_firewall" "egress_all_vpc5" {
+  allow {
+    protocol = "all"
+  }
+
+  destination_ranges = ["0.0.0.0/0"]
+  direction          = "EGRESS"
+  name               = "egress-all-vpc5"
+  network            = google_compute_network.vdc_vpc5.id
+  priority           = 999
+  project            = local.gcp-project
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# NAT: We use cloud NAT for 
+# - the primary ip of servers deployed to vpc1 to have access to the internet (e.g. apt-update...)
+# - the network used by the Edge routers' uplinks to access the internet.check
+# - the WAN networks (vpc6 and vpc7)
+
+
+resource "google_compute_router" "vdc_vpc1_cloud_router" {
+  name    = "vdc-vpc1-cloud-router"
+  network = google_compute_network.vdc_vpc1.id
+  region  = google_compute_subnetwork.vdc_vpc1_net_10.region
+}
+
+resource "google_compute_router_nat" "vdc_vpc1_nat" {
+  name                               = "vdc-vpc1-nat"
+  router                             = google_compute_router.vdc_vpc1_cloud_router.name
+  region                             = google_compute_router.vdc_vpc1_cloud_router.region
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
+}
+
+
+
+
+# vpc2 is used for internet uplink of Edge Routers (cloud1/pnet1/vpc2). So need cloud NAT. 
+resource "google_compute_router" "vdc_vpc2_cloud_router" {
+  name    = "vdc-vpc2-cloud-router"
+  network = google_compute_network.vdc_vpc2.id
+  region  = google_compute_subnetwork.vdc_vpc2_net_20.region
+}
+
+resource "google_compute_router_nat" "vdc_vpc2_nat" {
+  name                               = "vdc-vpc2-nat"
+  router                             = google_compute_router.vdc_vpc2_cloud_router.name
+  region                             = google_compute_router.vdc_vpc2_cloud_router.region
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
+}
+
+
+
+# vpc7 is used for VPN/WAN uplink-B of CE-A (cloud6/pnet6/vpc7). So need cloud NAT to static IP.
+resource "google_compute_router" "vdc_vpc7_cloud_router" {
+  name    = "vdc-vpc7-cloud-router"
+  network = google_compute_network.vdc_vpc7.id
+  region  = google_compute_subnetwork.vdc_vpc7_net_70.region
+}
+
+resource "google_compute_router_nat" "vdc_vpc7_nat" {
+  name                               = "vdc-vpc7-nat"
+  router                             = google_compute_router.vdc_vpc7_cloud_router.name
+  region                             = google_compute_router.vdc_vpc7_cloud_router.region
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
+}
+
+# vpc8 is used for VPN/WAN uplink-B of CE-B (cloud7/pnet7/vpc8). So need cloud NAT to static IP.
+resource "google_compute_router" "vdc_vpc8_cloud_router" {
+  name    = "vdc-vpc8-cloud-router"
+  network = google_compute_network.vdc_vpc8.id
+  region  = google_compute_subnetwork.vdc_vpc8_net_80.region
+}
+
+resource "google_compute_router_nat" "vdc_vpc8_nat" {
+  name                               = "vdc-vpc8-nat"
+  router                             = google_compute_router.vdc_vpc8_cloud_router.name
+  region                             = google_compute_router.vdc_vpc8_cloud_router.region
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################################################################################################################################################################
+##################################################################################################################################################################
+################### One-time Pnetlab installed via script and exported to vmdk in bucket #########################################################################
+################### User would only need to copy vmdk from bucket to deploy their own pnetlab instance ###########################################################
+##################################################################################################################################################################
+##################################################################################################################################################################
+
+
+## pnetlab instance
+
+## gcloud compute images create nested-ubuntu-focal --source-image-family=ubuntu-2004-lts --source-image-project=ubuntu-os-cloud --licenses https://www.googleapis.com/compute/v1/projects/vm-options/global/licenses/enable-vmx
+
+## For pnetlab-v5 install (requires 1804)
+# gcloud compute image list --show-deprecated | grep ubuntu
+# data "google_compute_image" "ubuntu_1804_lts" {
+#   family  = "ubuntu-pro-1804-lts"
+#   project = "ubuntu-os-pro-cloud"
+# }
+
+# Image available from regions (gcloud compute images list | grep ubuntu)
+# data "google_compute_image" "ubuntu_1804_lts" {
+#   name  = "ubuntu-pro-1804-bionic-v20241217"
+#   project = "ubuntu-os-pro-cloud"
+# }
+
+
+## Custom image with nesting (vmx): ubuntu_focal_nested (2004) and buntu_bionic_nested (1804)
+## The purpose is to create a new image that includes additional licenses—specifically ubuntu-pro-1804-lts/ubuntu-2004-lts and enable-vmx—which can only be applied when creating a new custom image from an existing disk or snapshot.
+
+data "google_compute_image" "ubuntu_1804_lts" {
+  family  = "ubuntu-pro-1804-lts"
+  project = "ubuntu-os-pro-cloud"
+}
+
+resource "google_compute_disk" "persistent_disk_1804lts" {
+  name  = "ubuntu-1804-pd"
+  image = data.google_compute_image.ubuntu_1804_lts.self_link
+  size  = 250
+  type  = "pd-ssd"
+  zone  = local.gcp-zone
+}
+
+resource "google_compute_image" "ubuntu_bionic_nested" {
+  name              = "ubuntu-bionic-nested"
+  source_disk       = google_compute_disk.persistent_disk_1804lts.self_link
+  storage_locations = [local.gcp-region]
+  licenses          = ["https://www.googleapis.com/compute/v1/projects/ubuntu-os-pro-cloud/global/licenses/ubuntu-pro-1804-lts", "https://www.googleapis.com/compute/v1/projects/vm-options/global/licenses/enable-vmx"]
+}
+# The official images from the ubuntu-os-pro-cloud project already have the Ubuntu Pro license attached. The reason for adding the license explicitly when creating a custom image is that the license is not automatically carried over when you create a new image from a disk.
+# This is not the case for the free images from ubuntu-os-cloud project. Although we do respecify the license for the custom image, we techincally don't have to. 
+# enable-vmx is required for both to enable nested virtualization. The enable-vmx option is specified under the licenses field because Google Cloud's API uses licenses as a general mechanism to attach feature flags and specific configuration settings to an image.
+
+
+
+
+
+## pnetlab-v6 install from scratch (ubuntu-2004-lts - !! my scripts were built for 1804. 2004 uses netplan. !!)
+data "google_compute_image" "ubuntu_2004_lts" {
+  family  = "ubuntu-pro-2004-lts"
+  project = "ubuntu-os-pro-cloud"
+}
+
+# data "google_compute_image" "ubuntu_2004_lts" {
+#   family  = "ubuntu-2004-lts"
+#   project = "ubuntu-os-cloud"
+# }
+
+resource "google_compute_disk" "persistent_disk_2004lts" {
+  name  = "ubuntu-2004-pd"
+  image = data.google_compute_image.ubuntu_2004_lts.self_link
+  size  = 250
+  type  = "pd-ssd"
+  zone  = local.gcp-zone
+}
+
+# resource "google_compute_image" "ubuntu_focal_nested" {
+#   name              = "ubuntu-focal-nested"
+#   source_disk       = google_compute_disk.persistent_disk_2004lts.self_link
+#   storage_locations = [local.gcp-region]
+#   licenses          = ["https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/licenses/ubuntu-2004-lts", "https://www.googleapis.com/compute/v1/projects/vm-options/global/licenses/enable-vmx"]
+# }
+
+
+resource "google_compute_image" "ubuntu_focal_nested" {
+  name              = "ubuntu-focal-nested"
+  source_disk       = google_compute_disk.persistent_disk_2004lts.self_link
+  storage_locations = [local.gcp-region]
+  licenses          = ["https://www.googleapis.com/compute/v1/projects/ubuntu-os-pro-cloud/global/licenses/ubuntu-pro-2004-lts", "https://www.googleapis.com/compute/v1/projects/vm-options/global/licenses/enable-vmx"]
+}
+
+# The official images from the ubuntu-os-pro-cloud project already have the Ubuntu Pro license attached. The reason for adding the license explicitly when creating a custom image is that the license is not automatically carried over when you create a new image from a disk.
+# This is not the case for the free images from ubuntu-os-cloud project. Although we do respecify the license for the custom image, we techincally don't have to. 
+# enable-vmx is required for both to enable nested virtualization. The enable-vmx option is specified under the licenses field because Google Cloud's API uses licenses as a general mechanism to attach feature flags and specific configuration settings to an image.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Create <project>-bucket bucket:
+resource "google_storage_bucket" "project_bucket" {
+  name          = "${local.gcp-project}-bucket"
+  location      = local.gcp-region # Replace with your desired location [ypm] should change it to my zone of choice and not multi-region.
+  force_destroy = false            # Allow bucket deletion even with objects (use with caution)
+
+  uniform_bucket_level_access = true # Recommended for consistent permissions
+}
+#make gce-sa storage objectAdmin of bucket:
+resource "google_storage_bucket_iam_member" "project_bucket_iam" {
+  bucket = google_storage_bucket.project_bucket.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${local.gce-sa}"
+}
+
+#Below service account bucket access permission was added only so that my eve-ng project could access that bucket when testing container lab (needed to download vyos confgs from this bucket)
+resource "google_storage_bucket_iam_member" "project_bucket_iam-2" {
+  bucket = google_storage_bucket.project_bucket.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${local.gce-sa-eve-ng-368801}"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Copy local assets (from git clone) to our bucket:
+
+#terraform apply -replace google_storage_bucket_object.routes_fix_all_singlehomed
+resource "google_storage_bucket_object" "routes_fix_all_singlehomed" {
+  name       = "net-fix-scripts-pnetlab/routes-fix-all-final.sh.singlehomed"
+  bucket     = google_storage_bucket.project_bucket.name
+  source     = "./assets-pnetlab/startup-scripts/routes-fix-all-final.sh.singlehomed" # Path to your local file
+  depends_on = [google_storage_bucket.project_bucket]
+}
+
+# terraform apply -replace google_storage_bucket_object.routes_fix_all_dualhomed
+resource "google_storage_bucket_object" "routes_fix_all_dualhomed" {
+  name       = "net-fix-scripts-pnetlab/routes-fix-all-final.sh.dualhomed"
+  bucket     = google_storage_bucket.project_bucket.name
+  source     = "./assets-pnetlab/startup-scripts/routes-fix-all-final.sh.dualhomed" # Path to your local file
+  depends_on = [google_storage_bucket.project_bucket]
+}
+
+
+# resource "google_storage_bucket_object" "icons" {
+#   name       = "opt/unetlab/html/images/icons/"
+#   bucket     = google_storage_bucket.project_bucket.name
+#   source     = "assets-pnetlab/icons/*" # Path to your local file
+#   depends_on = [google_storage_bucket.project_bucket]
+# }
+resource "null_resource" "icons_upload" {
+provisioner "local-exec" {
+  # This command will export the image to your local directory
+  command = <<EOT
+  gsutil cp -r ./assets-pnetlab/icons/* gs://${google_storage_bucket.project_bucket.name}/assets-pnetlab/opt/unetlab/html/images/icons
+  EOT
+}
+}
+
+
+# # terraform apply -replace google_storage_bucket_object.iso_vyos
+# resource "google_storage_bucket_object" "iso_vyos" {
+#   name       = "assets-pnetlab/iso/vyos-1.4-rolling-202306290317-amd64.iso"
+#   bucket     = google_storage_bucket.project_bucket.name
+#   source     = "./assets-pnetlab/assets-pnetlab/iso/vyos-1.4-rolling-202306290317-amd64.iso" # Path to your local file
+#   depends_on = [google_storage_bucket.project_bucket]
+# }
+# #instead manually uploaded from mac to bucket at:
+# #gs://vdc-tf-bucket/assets-pnetlab/iso/vyos-1.4-rolling-202306290317-amd64.iso
+
+
+resource "google_storage_bucket_object" "folder_pnetlab_images" {
+  name       = "custom-images/pnetlab/tmp.txt"
+  bucket     = google_storage_bucket.project_bucket.name
+  content    = <<EOF
+#used to create folder in bucket. gcloud compute iamges create cannot reference a non-existent target/folder
+EOF
+  depends_on = [google_storage_bucket.project_bucket]
+}
+
+
+
+## Don't need to make buckets public if using gsutil to copy the bucket objects with the GCE instance service account.
+# resource "google_storage_object_access_control" "public_access_singlehomed" {
+#   bucket = google_storage_bucket.project_bucket.name
+#   object = google_storage_bucket_object.routes_fix_all_singlehomed.name
+#   role   = "READER"
+#   entity = "allUsers"
+# }
+#
+# resource "google_storage_object_access_control" "public_access_dualhomed" {
+#   bucket = google_storage_bucket.project_bucket.name
+#   object = google_storage_bucket_object.routes_fix_all_dualhomed.name
+#   role   = "READER"
+#   entity = "allUsers"
+# }
+#
+# locals {
+#   public_url_single_homed = "https://storage.googleapis.com/${google_storage_bucket.project_bucket.name}/${google_storage_bucket_object.routes_fix_all_singlehomed.name}"
+#   public_url_dual_homed   = "https://storage.googleapis.com/${google_storage_bucket.project_bucket.name}/${google_storage_bucket_object.routes_fix_all_dualhomed.name}"
+# }
+#
+# output "public_url_single_homed" {
+#   value = "https://storage.googleapis.com/${google_storage_bucket.project_bucket.name}/${google_storage_bucket_object.routes_fix_all_singlehomed.name}"
+# }
+#
+# output "public_url_dual_homed" {
+#   value = "https://storage.googleapis.com/${google_storage_bucket.project_bucket.name}/${google_storage_bucket_object.routes_fix_all_dualhomed.name}"
+# }
+
+
+
+
+
+
+
+
+#########################################################
+## Create instances (from image with startup script for network stack customization, and then manual install of pnet-lab via code block "Interactive/manual pnet server configuration instructions"
+
+# # ## pnetlab v5 (bionic) - from scratch (image is just ubuntu)
+resource "google_compute_instance" "vdc_pnetlab_v5" {
+  deletion_protection = false
+
+  machine_type = "n2-highmem-8"
+  name         = "vdc-pnetlab-v5"
+  zone         = local.gcp-zone
+
+  boot_disk {
+    initialize_params {
+      image = google_compute_image.ubuntu_bionic_nested.self_link
+    }
+    #mode = "READ_WRITE" # default
+  }
+
+  can_ip_forward = true
+  enable_display = true
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc1_net_10.self_link
+    network_ip  = "10.10.10.215"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.15.0/24"
+      subnetwork_range_name = "secondary-vpc1-net-10-15"
+    }
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc2_net_20.self_link
+    network_ip  = "10.10.20.215"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.25.0/24"
+      subnetwork_range_name = "secondary-vpc2-net-20-25"
+    }
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc3_net_30.self_link
+    network_ip  = "10.10.30.215"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.35.0/24"
+      subnetwork_range_name = "secondary-vpc3-net-30-35"
+    }
+
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc4_net_40.self_link
+    network_ip  = "10.10.40.215"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.45.0/24"
+      subnetwork_range_name = "secondary-vpc4-net-40-45"
+    }
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc5_net_50.self_link
+    network_ip  = "10.10.50.215"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.55.0/24"
+      subnetwork_range_name = "secondary-vpc5-net-50-55"
+    }
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc6_net_60.self_link
+    network_ip  = "10.10.60.215"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.65.0/24"
+      subnetwork_range_name = "secondary-vpc6-net-60-65"
+    }
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc7_net_70.self_link
+    network_ip  = "10.10.70.215"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.75.0/24"
+      subnetwork_range_name = "secondary-vpc7-net-70-75"
+    }
+    access_config {
+      network_tier = "PREMIUM"
+    }
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc8_net_80.self_link
+    network_ip  = "10.10.80.215"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.85.0/24"
+      subnetwork_range_name = "secondary-vpc8-net-80-85"
+    }
+    access_config {
+      network_tier = "PREMIUM"
+    }
+  }
+
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+    preemptible         = false
+    provisioning_model  = "STANDARD"
+  }
+
+  service_account {
+    email  = local.gce-sa
+    scopes = ["https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring.write", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
+    # made cloud storage api read_write vs read_only in case we want to write to the bucket via the SA.
+  }
+
+  shielded_instance_config {
+    enable_integrity_monitoring = true
+    enable_secure_boot          = false
+    enable_vtpm                 = true
+  }
+
+  depends_on = [
+    google_compute_subnetwork.vdc_vpc1_net_10,
+    google_compute_subnetwork.vdc_vpc2_net_20,
+    google_compute_subnetwork.vdc_vpc3_net_30,
+    google_compute_subnetwork.vdc_vpc4_net_40,
+    google_compute_subnetwork.vdc_vpc5_net_50,
+    google_compute_subnetwork.vdc_vpc6_net_60,
+    google_compute_subnetwork.vdc_vpc7_net_70,
+    google_compute_subnetwork.vdc_vpc8_net_80,
+    google_compute_image.ubuntu_bionic_nested
+  ]
+
+  metadata = {
+    enable-oslogin     = "true"
+    serial-port-enable = "true"
+    startup-script     = <<EOF
+      #!/bin/bash
+      download_script() {
+        local script_name="$1"
+        local script_url="gs://${google_storage_bucket.project_bucket.name}/net-fix-scripts-pnetlab/$script_name" 
+        
+        if [[ -f "/root/$script_name" ]]; then
+          echo "File '$script_name' already exists. Skipping download."
+          return 0
+        fi
+        
+        echo "Downloading file with gsutil ..."        
+        gsutil cp "gs://${google_storage_bucket.project_bucket.name}/net-fix-scripts-pnetlab/$script_name" /tmp
+
+  
+
+        if [ $? -eq 0 ]; then # if last command successful (exitcode 0)
+          #sudo chmod +x "/tmp/$script_name"
+          sudo cp /tmp/"$script_name" /root
+          echo "File '$script_name' downloaded and placed in root."
+        else
+          echo "Error downloading script '$script_name' from '$script_url'. Please check URL and connectivity."
+          exit 1
+        fi
+      }
+      # Download singlehomed and dualhomed scripts
+      download_script routes-fix-all-final.sh.singlehomed
+      download_script routes-fix-all-final.sh.dualhomed  
+      # # use if slow pnetlab mirror - acrhives from 2025/01/03 for pnetlab v5
+      # sudo gsutil -m cp -r "gs://${google_storage_bucket.project_bucket.name}/apt-archives/*" /var/cache/apt/archives/
+      sudo sed -i 's/#force_color_prompt=yes/force_color_prompt=yes/' /root/.bashrc
+      sudo source /root/.bashrc
+      sudo gsutil cp -r gs://vdc-tf-bucket/assets-pnetlab/opt/unetlab/html/images/icons /opt/unetlab/html/images/
+
+      sudo gsutil cp -r gs://vdc-tf-bucket/assets-pnetlab/opt/unetlab/html/labs /opt/unetlab/html/labs/
+
+      sudo mkdir /opt/unetlab/addons/qemu/vyos-1.4-rolling-202306290317
+      sudo gsutil cp gs://vdc-tf-bucket/assets-pnetlab/iso/vyos-1.4-rolling-202306290317-amd64.iso /opt/unetlab/addons/qemu/vyos-1.4-rolling-202306290317
+
+      sudo mkdir /opt/unetlab/addons/qemu/winserver-S2019-R2-x64-rev3
+      sudo gsutil cp gs://vdc-tf-bucket/assets-pnetlab/addons/qemu/winserver-S2019-R2-x64-rev3/virtioa.qcow2 /opt/unetlab/addons/qemu/winserver-S2019-R2-x64-rev3 
+
+      sudo mkdir /root/vyos-configs
+      sudo gsutil cp gs://vdc-tf-bucket/assets-pnetlab/vyos-configs /root/vyos-configs 
+
+      sudo cp /root/routes-fix-all-final.sh.dualhomed /root/routes-fix-all-final.sh
+      sudo chmod +x /root/routes-fix-all-final.sh
+      sudo . ./root/routes-fix-all-final.sh
+    
+
+   EOF
+  }
+}
+
+# Monitor deployment:
+# gcloud compute instances tail-serial-port-output vdc-pnetlab-v5
+# gcloud compute scp --tunnel-through-iap ./routes-fix-all-final.sh.singlehomed vdc-pnetlab-v5:~/tmp
+# gcloud compute ssh --tunnel-through-iap vdc-pnetlab-v5
+
+
+##START OF: Interactive/manual pnet server configuration instructions
+# sudo -i
+# echo 'root:pnet' | chpasswd #instead of interactive 'passwd'
+# sed -i -e "s/.*PermitRootLogin .*/PermitRootLogin yes/" /etc/ssh/sshd_config
+# service sshd restart
+# echo "deb [trusted=yes] http://repo.pnetlab.com ./" >> /etc/apt/sources.list
+# echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# apt-get update
+# apt-get purge netplan.io -y
+# apt-get install pnetlab -y --show-progress
+
+#     # Divert the configuration file (did not work) --> [ypm] see if can fix that
+#     sudo dpkg-divert --local --divert /etc/kernel-img.conf.distrib --rename /etc/kernel-img.conf
+#     sudo apt-get install -y pnetlab
+
+# Run once (first time so that can have files from pnetlab repo in a bucket): for future deployments because the mirror is slow
+# sudo gsutil -m cp -r /var/cache/apt/archives/* gs://vdc-tf-bucket/pnet-lab-binaries/apt-archives/
+
+## binaries were stored on gcs bucket to avoid having to fetch from pnetlab repo which sometimes has bandwidth issues.
+# sudo gsutil -m cp -r gs://vdc-tf-bucket/pnet-lab-binaries/apt-archives/ /var/cache/apt/archives/
+
+# reboot && gcloud compute instances tail-serial-port-output vdc-pnetlab-v5
+
+# sudo -i
+# ctrl-C
+# sudo -i
+# ctrl-C
+# ctrl -l
+# echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# curl -sL 'https://labhub.eu.org/api/raw/?path=/UNETLAB%20I/upgrades_pnetlab/bionic/install_pnetlab_latest_v5.sh'| sh
+# sudo curl -sL 'https://labhub.eu.org/api/raw/?path=/UNETLAB%20I/upgrades_pnetlab/bionic/install_pnetlab_latest_v5.sh'> /root/install_pnetlab_latest_v5.sh
+# gsutil -m cp -r /root/install_pnetlab_latest_v5.sh gs://vdc-tf-bucket/pnet-lab-binaries/pnetlab-v5-latest/
+
+##ishare2 github: https://github.com/pnetlabrepo/ishare2
+#sudo wget -O /usr/sbin/ishare2 https://raw.githubusercontent.com/pnetlabrepo/ishare2/main/ishare2 > /dev/null 2>&1 
+#sudo chmod +x /usr/sbin/ishare2
+
+## END OF: Interactive/manual pnet server configuration instructions
+
+
+
+
+
+
+
+
+
+# ## Note: look into qemu-utils (is being installed)
+# ###OR, if wanted to automate installation of pnetlab: problem is that at some point installation requires user input (kernel update) so not an option to automate the installation:
+# ##   # Automation of pnetlab installation (v5): will take about 15 minutes
+# ##   metadata = {
+# ##     enable-oslogin     = "true"
+# ##     serial-port-enable = "true"
+# ##     user-data = data.template_file.cloud_init_config_v5.rendered
+# ##     block-project-ssh-keys = "false"
+# ##   }
+# ##
+# ## }
+# ##
+# ## data "template_file" "cloud_init_config_v5" {
+# ##   template = file("./cloud-init-pnet-v5.yaml")
+# ## }
+# ##
+
+
+# Now that we installed pnetlab (manually) Create 'pnetlab_v5_custom_base' custom image for pnetlab-v5 fully setup (no need to when have above vmdk shared to users)
+
+resource "null_resource" "stop_instance" {
+  provisioner "local-exec" {
+    command = <<EOT
+      #gcloud compute instances stop vdc-pnetlab-v5 --zone=${local.gcp-zone} --project=${local.gcp-project}
+      gcloud compute instances stop ${google_compute_instance.vdc_pnetlab_v5.name} --zone=${local.gcp-zone} --project=${local.gcp-project}
+    EOT
+  }
+  depends_on = [google_compute_instance.vdc_pnetlab_v5]
+}
+
+# Compute Engine Image:
+resource "google_compute_image" "pnetlab_v5_custom_base" {
+  name              = "vdc-pnetlab-v5-image-base"
+  project           = local.gcp-project # Replace with your project ID
+  storage_locations = ["${local.gcp-region}"]
+  source_disk       = google_compute_instance.vdc_pnetlab_v5.boot_disk[0].source
+  # Optional settings
+  family      = "vdc-pnetlab-images"
+  description = "Image of installed pnetlab-v5 server (i.e. without linux networking customizations)"
+  licenses    = ["https://www.googleapis.com/compute/v1/projects/ubuntu-os-pro-cloud/global/licenses/ubuntu-pro-1804-lts", "https://www.googleapis.com/compute/v1/projects/vm-options/global/licenses/enable-vmx"]
+  depends_on  = [null_resource.stop_instance, google_compute_instance.vdc_pnetlab_v5]
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+resource "null_resource" "start_instance" {
+  provisioner "local-exec" {
+    command = <<EOT
+      gcloud compute instances start vdc-pnetlab-v5 --zone=${local.gcp-zone} --project=${local.gcp-project}
+    EOT
+  }
+  depends_on = [google_compute_instance.vdc_pnetlab_v5]
+}
+
+
+## # Note: If wanted to Make a copy and rename
+##           resource "google_compute_image" "pnetlab_v5_custom_base_copy" {
+##             name              = "vdc-pnetlab-v5-image-base-copy"  # New name for the copied image
+##             project           = local.gcp-project
+##             storage_locations = ["${local.gcp-region}"] 
+##             source_image = google_compute_image.pnetlab_v5_custom_base.self_link #or source_image = "projects/source-project-id/global/images/source-image-name"
+##             # Optional settings (you can modify these if needed)
+##             family      = "vdc-pnetlab-images"
+##             description = "Copy of the base PNetLab image" 
+##             licenses    = ["https://www.googleapis.com/compute/v1/projects/ubuntu-os-pro-cloud/global/licenses/ubuntu-pro-1804-lts", "https://www.googleapis.com/compute/v1/projects/vm-options/global/licenses/enable-vmx"]
+##             lifecycle {
+##               prevent_destroy = true
+##             }
+##           }
+
+
+
+
+## Export to bucket as vmdk: We cannot directly write the image to a bucket. 
+##    Instead have to export to vmdk format (it will still only be the image and not include the interface configurations.)
+##    gcloud compute images export --destination-uri=gs://vdc-tf-bucket/custom-images/pnetlab/pnetlab-v5-custom-base.vmdk --image=vdc-pnetlab-v5-image-base --project=vdc-tf --export-format=vmdk --network=vdc-vpc1 --subnet=vdc-vpc1-net-10
+
+resource "null_resource" "vmdk_pnetlab_v5_custom" {
+  provisioner "local-exec" {
+    # This command will export the image to your local directory
+    command = <<EOT
+    gcloud compute images export \
+    --destination-uri=gs://${google_storage_bucket.project_bucket.name}/custom-images/pnetlab/pnetlab-v5-custom-base.vmdk \
+    --image=${google_compute_image.pnetlab_v5_custom_base.name} \
+    --export-format=vmdk \
+    --project=${local.gcp-project} \
+    --network=${google_compute_network.vdc_vpc1.name} \
+    --subnet=${google_compute_subnetwork.vdc_vpc1_net_10.name} \
+    --image-project=${local.gcp-project} \
+    --zone=${local.gcp-zone} #--quiet
+    #gsutil setmeta -h "Content-Description:pnetlab-v5 custom image, no network scripts applied" gs://${google_storage_bucket.project_bucket.name}/pnetlab-custom-images/pnetlab-v5-custom-base.vmdk
+    EOT
+  }
+  depends_on = [google_compute_image.pnetlab_v5_custom_base, google_storage_bucket_object.folder_pnetlab_images]
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+
+
+### Bucket object to local filesystem
+### gcloud storage cp gs://BUCKET_NAME/OBJECT_NAME SAVE_TO_LOCATION (https://cloud.google.com/storage/docs/downloading-objects)
+## resource "null_resource" "download_object" {
+##   provisioner "local-exec" {
+##     command = "gsutil cp gs://your-bucket-name/path/to/your/object.txt /path/to/local/destination/"
+##     when    = create  # Only run during creation
+##   }
+## }
+
+
+
+
+## So that can reference an image in our gcp project without the terraform resource that created it (once commented out).
+# resource "null_resource" "save_image_link" {
+#  provisioner "local-exec" {
+#     command = <<EOT
+#       echo "projects/${local.gcp-project}/${local.gcp-region}/images/${google_compute_image.pnetlab_v5_custom.name}" > ${google_compute_image.pnetlab_v5_custom.name}_link.txt
+#     EOT
+#   }
+# }
+# # reference it with: image = file("image_link.txt")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################################################################################################################################################################
+##################################################################################################################################################################
+################## Pnetlab-v5 using vmdk image import from source bucket (pnetlab installed but not labs), and import to local import bucket #########################################################
+##################################################################################################################################################################
+##################################################################################################################################################################
+
+## SKIP
+### Option 1: Upload vmdk from local filesystem to bucket (https://cloud.google.com/storage/docs/uploading-objects#terraform-upload-objects)
+## Create a text object in Cloud Storage
+#
+##            resource "google_storage_bucket_object" "default" {
+##              name = "new-object"
+##              # Use `source` or `content`
+##              source       = "/path/to/an/object"
+##              # content      = "Data as string to be uploaded"
+##              content_type = "text/plain"
+##              bucket       = google_storage_bucket.static.id
+##            }
+## OR
+## 
+##           resource "null_resource" "vmdk_gsutil_import_pnetlab_v5_custom" {
+##            provisioner "local-exec" {
+##              # This command will export the image to your local directory
+##              command = <<EOT
+##              #gsutil cp ./pnetlab-v5-custom-base.vmdk gs://${google_storage_bucket.project_bucket.name}/custom-images/pnetlab/pnetlab-v5-custom-base-imported.vmdk
+##              gsutil cp ./test.txt gs://${google_storage_bucket.project_bucket.name}/custom-images/pnetlab/test-import.txt
+##              EOT
+##            }
+##            #depends_on = [google_compute_image.pnetlab_v5_custom_base, google_storage_bucket_object.folder_pnetlab_images]
+##            # lifecycle {
+##            #   prevent_destroy = true
+##            # }
+##           }
+
+
+
+
+
+## USE THIS
+## Option 2: copy bucket object from one bucket to another https://cloud.google.com/storage/docs/moving-buckets#move-buckets
+##      - Copy bucket content: gcloud storage cp --recursive gs://SOURCE_BUCKET/* gs://DESTINATION_BUCKET
+##      - Copy bucket object: gcloud storage cp gs://SOURCE_BUCKET_NAME/SOURCE_OBJECT_NAME gs://DESTINATION_BUCKET_NAME/NAME_OF_COPY (https://cloud.google.com/storage/docs/copying-renaming-moving-objects#copy)
+##      - Move bucket/rename object: gcloud storage mv gs://SOURCE_BUCKET_NAME/SOURCE_OBJECT_NAME gs://DESTINATION_BUCKET_NAME/DESTINATION_OBJECT_NAME (https://cloud.google.com/storage/docs/copying-renaming-moving-objects#move)
+
+
+resource "google_storage_bucket" "project_bucket_import" {
+  name                        = "${local.gcp-project}-bucket-import"
+  location                    = local.gcp-region # Replace with your desired location [ypm] should change it to my zone of chocie and not multi-region.
+  force_destroy               = false            # Allow bucket deletion even with objects (use with caution)
+  uniform_bucket_level_access = true             # Recommended for consistent permissions
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+data "external" "get_source_object_crc32c" {
+  program = [
+    "bash",
+    "-c",
+    <<-EOT
+      gsutil hash -m "gs://${google_storage_bucket.project_bucket.name}/custom-images/pnetlab/pnetlab-v5-custom-base.vmdk" | \
+      awk '/Hash \(crc32c\)/ {printf "{\"crc32c\": \"%s\"}", substr($0, 18, 8)}'
+    EOT
+  ]
+}
+resource "null_resource" "import_pnetlab_from_bucket" {
+  triggers = {
+    source_object_crc32c = data.external.get_source_object_crc32c.result.crc32c
+    #condition to trigger the local-exec command: if the source_object_md5 is different than when the resource was previously evaluated.
+  }
+  provisioner "local-exec" {
+    #command = "gcloud storage cp --recursive gs://${google_storage_bucket.source_bucket.name}/* gs://${google_storage_bucket.destination_bucket.name}"
+    command = "gcloud storage cp gs://${google_storage_bucket.project_bucket.name}/custom-images/pnetlab/pnetlab-v5-custom-base.vmdk gs://${google_storage_bucket.project_bucket_import.name}/custom-images/pnetlab/pnetlab-v5-custom-base.vmdk"
+  }
+}
+
+
+# Or could have used storage transfer service
+##
+## resource "google_project_service" "storagetransfer_api" {
+##   project            = local.gcp-project
+##   service            = "storagetransfer.googleapis.com"
+##   disable_on_destroy = false # Set to true to disable on destroy
+## }
+##
+## resource "google_project_iam_member" "sts_objectadmin" {
+##   project = local.gcp-project
+##   role    = "roles/storage.objectAdmin"
+##   member  = "serviceAccount:${local.storagetransfer-sa}"
+## }
+##
+## resource "google_project_iam_member" "sts_admin" {
+##   project = local.gcp-project
+##   role    = "roles/storage.admin"
+##   member  = "serviceAccount:${local.storagetransfer-sa}"
+## }
+##
+## resource "google_storage_transfer_job" "gcs_to_gcs_transfer" {
+##   project = local.gcp-project # project of source
+##   description = "Copy object between GCS buckets"
+##
+##   transfer_spec {
+##     gcs_data_source {
+##       bucket_name = "${google_storage_bucket.project_bucket.name}"
+##       #path = "custom-images/pnetlab/"
+##     }
+##     gcs_data_sink {
+##       bucket_name = "${google_storage_bucket.project_bucket_import.name}"
+##       #path = "custom-images/pnetlab/" - with that in the destination bucket file ended up in bucket >customer-images>pnetlab>custom-image>pnetlab
+##     }
+##     object_conditions {
+##       include_prefixes = ["custom-images/pnetlab/pnetlab-v5-custom-base.vmdk"] 
+##     }
+##     transfer_options {
+##       #delete_objects_unique_in_sink = false  # Don't delete objects in the destination
+##       delete_objects_from_source_after_transfer = false
+##       overwrite_objects_already_existing_in_sink = true  # Overwrite if the object exists
+##     }
+##   }
+##   depends_on = [ google_storage_bucket.project_bucket_import ]
+## }
+##
+## ##gcloud transfer jobs list
+## ##gcloud transfer operations list
+##
+## resource "null_resource" "run_transfer" {
+##   triggers = {
+##     job_id = google_storage_transfer_job.gcs_to_gcs_transfer.name
+##   }
+##   provisioner "local-exec" {
+##     command = "gcloud transfer jobs run ${google_storage_transfer_job.gcs_to_gcs_transfer.name} --project ${google_storage_transfer_job.gcs_to_gcs_transfer.project}"
+##   }
+##   depends_on = [
+##     google_storage_transfer_job.gcs_to_gcs_transfer
+##   ]
+## }
+
+
+
+
+
+
+
+## Step 2: Import image from bucket to compute engine - so it shows in gcloud compute images list (https://cloud.google.com/migrate/virtual-machines/docs/5.0/migrate/image_import#gcloud ; more info at https://cloud.google.com/sdk/gcloud/reference/migration/vms/image-imports)
+
+
+
+## Import with gcloud copmute images import , which will be deprecated in favor of gcloud migration vms image-imports
+## https://cloud.google.com/sdk/gcloud/reference/compute/images/import
+
+
+
+# # ## Option 1: This failed: because of deprecation???
+# ## For export we had used: 
+# ##gcloud compute images export --destination-uri=gs://vdc-tf-bucket/test-gcloud.vmdk --image=vdc-pnetlab-v5-image-base --project=vdc-tf --export-format=vmdk --network=vdc-vpc1 --subnet=vdc-vpc1-net-10
+#
+# ## This failed: because of deprecation???
+# # gcloud compute images import vdc-pnetlab-v5-image-base-imported \
+# # --source-file=gs://vdc-tf-bucket-import/custom-images/pnetlab/pnetlab-v5-custom-base.vmdk \
+# # --network=vdc-vpc1 --subnet=vdc-vpc1-net-10 \
+# # --family=vdc-pnetlab-images \
+# # --project=vdc-tf \
+# # --storage-location=us-central1
+#
+# resource "null_resource" "image_import_pnetlab_v5" {
+#   provisioner "local-exec" {
+#     # This command will export the image to your local directory
+#     command = <<EOT
+#     gcloud compute images import vdc-pnetlab-v5-image-base-v2 \
+#     --family=vdc-pnetlab-images \
+#     --source-file=gs://${google_storage_bucket.project_bucket_import.name}/custom-images/pnetlab/pnetlab-v5-custom-base.vmdk \
+#     --network=${google_compute_network.vdc_vpc1.name} \
+#     --subnet=${google_compute_subnetwork.vdc_vpc1_net_10.name} \
+#     --project=${local.gcp-project} \
+#     --storage-location=${local.gcp-region}
+#     EOT
+#   }
+#   depends_on = [data.google_storage_bucket_object.object_check, google_compute_image.pnetlab_v5_custom_base, google_storage_bucket_object.folder_pnetlab_images]
+#   lifecycle {
+#     prevent_destroy = true
+#   }
+# }
+
+
+
+
+# ##Option 2:  Requires adding our project as a target project via console (no gcloud option) : https://cloud.google.com/migrate/virtual-machines/docs/5.0/get-started/target-project
+
+
+#Setup target project: enable services - https://cloud.google.com/migrate/virtual-machines/docs/5.0/get-started/target-project#identify
+
+resource "google_project_service" "vmmigration_api" {
+  project            = local.gcp-project
+  service            = "vmmigration.googleapis.com"
+  disable_on_destroy = false # Set to true to disable on destroy
+}
+
+resource "google_project_service" "svcmgmt_api" {
+  project            = local.gcp-project
+  service            = "servicemanagement.googleapis.com"
+  disable_on_destroy = false # Set to true to disable on destroy
+}
+
+resource "google_project_service" "svctrl_api" {
+  project            = local.gcp-project
+  service            = "servicecontrol.googleapis.com"
+  disable_on_destroy = false # Set to true to disable on destroy
+}
+
+resource "google_project_service" "iam_api" {
+  project            = local.gcp-project
+  service            = "iam.googleapis.com"
+  disable_on_destroy = false # Set to true to disable on destroy
+}
+
+resource "google_project_service" "cloudresmgr_api" {
+  project            = local.gcp-project
+  service            = "cloudresourcemanager.googleapis.com"
+  disable_on_destroy = false # Set to true to disable on destroy
+}
+
+
+# ## The role vmmigration.admin on the host project
+# resource "google_project_iam_member" "vmmigrationadmin_user" {
+#   project = local.gcp-project
+#   role    = "roles/storage.admin"
+#   member  = "user:<your user accnt>"
+# }
+# #The role resourcemanager.projectIamAdmin on the target project
+# resource "google_project_iam_member" "iamadmin_user" {
+#   project = local.gcp-project
+#   role    = "roles/resourcemanager.projectIamAdmin"
+#   member  = "user:<your user accnt>"
+# }
+
+
+# Console/manual step: Add project as target to Migrate to Virtual Machines: https://cloud.google.com/migrate/virtual-machines/docs/5.0/get-started/target-project#add-project
+## Adding a target project will give the Migrate to Virtual Machines service account service-846229250908@gcp-sa-vmmigration.iam.gserviceaccount.com the following role on the project: VM Migration Service Agent.
+## Validate presence of target project with: gcloud alpha migration vms target-projects list - projects/vdc-tf/locations/global/targetProjects/vdc-tf
+
+
+resource "google_project_iam_member" "storageadmin_sa_vm_migration" {
+  project = local.gcp-project
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:service-${local.gcp-project-number}@gcp-sa-vmmigration.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "storageobjectviewer_sa_vm_migration" {
+  project = local.gcp-project
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:service-${local.gcp-project-number}@gcp-sa-vmmigration.iam.gserviceaccount.com"
+}
+
+
+
+
+resource "null_resource" "vmdk_bucket_image_import_pnetlab_v5_custom" {
+  provisioner "local-exec" {
+    # This command will export the image to your local directory
+    command = <<EOT
+    gcloud migration vms image-imports create pnetlab-v5-custom-base-imported \
+    --source-file=gs://${google_storage_bucket.project_bucket_import.name}/custom-images/pnetlab/pnetlab-v5-custom-base.vmdk \
+    --location=${local.gcp-region} \
+    --family-name=vdc-pnetlab-images \
+    --target-project=projects/${local.gcp-project}/locations/global/targetProjects/vdc-tf
+    EOT
+  }
+  depends_on = [google_project_service.vmmigration_api,google_storage_bucket_object.folder_pnetlab_images]
+  #lifecycle {
+  #  prevent_destroy = true
+  #}
+}
+
+## check status with:
+resource "google_project_iam_member" "vm_migration_user" {
+  project = local.gcp-project
+  role    = "roles/vmmigration.admin"
+  member  = "user:admin@meillier.altostrat.com"
+}
+# gcloud migration vms image-imports list --location us-central1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################################################################################################################################################################
+##################################################################################################################################################################
+################## Create pnet-lab instance from the imported assets (vmdk/gce image) ############################################################################
+##################################################################################################################################################################
+##################################################################################################################################################################
+
+# # Keep track of the image in the Terraform state without actively managing it with above resource .
+# data "google_compute_image" "pnetlab_v5_custom_base" {
+#   name    = "pnetlab-v5-custom-base-imported" 
+#   project = local.gcp-project 
+# }
+
+
+# resource "google_compute_instance" "vdc_pnetlab_v5" {
+#   deletion_protection = false
+
+#   machine_type = "n2-highmem-8"
+#   name         = "vdc-pnetlab-v5"
+#   zone         = local.gcp-zone
+
+#   #boot_disk {
+#   #  initialize_params {
+#   #    # image = google_compute_image.pnetlab_v5_custom.self_link
+#   #    source = "gs://${google_storage_bucket.project_bucket.name}/custom-images/pnetlab/pnetlab-v5-custom-base.vmdk"  
+#   #  }
+#   #}
+#   boot_disk {
+#     initialize_params {
+#       #image = google_compute_image.pnetlab_v5_custom_base.self_link
+#       image = data.google_compute_image.pnetlab_v5_custom_base.self_link
+#     }
+#     #mode = "READ_WRITE" # default
+#   }
+
+#   can_ip_forward = true
+#   enable_display = true
+
+#   network_interface {
+#     nic_type    = "VIRTIO_NET"
+#     queue_count = 0
+#     stack_type  = "IPV4_ONLY"
+#     subnetwork  = google_compute_subnetwork.vdc_vpc1_net_10.self_link
+#     network_ip  = "10.10.10.215"
+#     alias_ip_range {
+#       ip_cidr_range         = "10.10.15.0/24"
+#       subnetwork_range_name = "secondary-vpc1-net-10-15"
+#     }
+#   }
+
+#   network_interface {
+#     nic_type    = "VIRTIO_NET"
+#     queue_count = 0
+#     stack_type  = "IPV4_ONLY"
+#     subnetwork  = google_compute_subnetwork.vdc_vpc2_net_20.self_link
+#     network_ip  = "10.10.20.215"
+#     alias_ip_range {
+#       ip_cidr_range         = "10.10.25.0/24"
+#       subnetwork_range_name = "secondary-vpc2-net-20-25"
+#     }
+#   }
+
+#   network_interface {
+#     nic_type    = "VIRTIO_NET"
+#     queue_count = 0
+#     stack_type  = "IPV4_ONLY"
+#     subnetwork  = google_compute_subnetwork.vdc_vpc3_net_30.self_link
+#     network_ip  = "10.10.30.215"
+#     alias_ip_range {
+#       ip_cidr_range         = "10.10.35.0/24"
+#       subnetwork_range_name = "secondary-vpc3-net-30-35"
+#     }
+
+#   }
+
+#   network_interface {
+#     nic_type    = "VIRTIO_NET"
+#     queue_count = 0
+#     stack_type  = "IPV4_ONLY"
+#     subnetwork  = google_compute_subnetwork.vdc_vpc4_net_40.self_link
+#     network_ip  = "10.10.40.215"
+#     alias_ip_range {
+#       ip_cidr_range         = "10.10.45.0/24"
+#       subnetwork_range_name = "secondary-vpc4-net-40-45"
+#     }
+#   }
+
+#   network_interface {
+#     nic_type    = "VIRTIO_NET"
+#     queue_count = 0
+#     stack_type  = "IPV4_ONLY"
+#     subnetwork  = google_compute_subnetwork.vdc_vpc5_net_50.self_link
+#     network_ip  = "10.10.50.215"
+#     alias_ip_range {
+#       ip_cidr_range         = "10.10.55.0/24"
+#       subnetwork_range_name = "secondary-vpc5-net-50-55"
+#     }
+#   }
+
+#   network_interface {
+#     nic_type    = "VIRTIO_NET"
+#     queue_count = 0
+#     stack_type  = "IPV4_ONLY"
+#     subnetwork  = google_compute_subnetwork.vdc_vpc6_net_60.self_link
+#     network_ip  = "10.10.60.215"
+#     alias_ip_range {
+#       ip_cidr_range         = "10.10.65.0/24"
+#       subnetwork_range_name = "secondary-vpc6-net-60-65"
+#     }
+#   }
+
+#   network_interface {
+#     nic_type    = "VIRTIO_NET"
+#     queue_count = 0
+#     stack_type  = "IPV4_ONLY"
+#     subnetwork  = google_compute_subnetwork.vdc_vpc7_net_70.self_link
+#     network_ip  = "10.10.70.215"
+#     alias_ip_range {
+#       ip_cidr_range         = "10.10.75.0/24"
+#       subnetwork_range_name = "secondary-vpc7-net-70-75"
+#     }
+#     access_config {
+#       network_tier = "PREMIUM"
+#     }
+#   }
+
+#   network_interface {
+#     nic_type    = "VIRTIO_NET"
+#     queue_count = 0
+#     stack_type  = "IPV4_ONLY"
+#     subnetwork  = google_compute_subnetwork.vdc_vpc8_net_80.self_link
+#     network_ip  = "10.10.80.215"
+#     alias_ip_range {
+#       ip_cidr_range         = "10.10.85.0/24"
+#       subnetwork_range_name = "secondary-vpc8-net-80-85"
+#     }
+#     access_config {
+#       network_tier = "PREMIUM"
+#     }
+#   }
+
+#   scheduling {
+#     automatic_restart   = true
+#     on_host_maintenance = "MIGRATE"
+#     preemptible         = false
+#     provisioning_model  = "STANDARD"
+#   }
+
+#   service_account {
+#     email  = local.gce-sa
+#     scopes = ["https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring.write", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
+#     # made cloud storage api read_write vs read_only in case we want to write to the bucket via the SA.
+#   }
+
+#   shielded_instance_config {
+#     enable_integrity_monitoring = true
+#     enable_secure_boot          = false
+#     enable_vtpm                 = true
+#   }
+
+#   depends_on = [
+#     google_compute_subnetwork.vdc_vpc1_net_10,
+#     google_compute_subnetwork.vdc_vpc2_net_20,
+#     google_compute_subnetwork.vdc_vpc3_net_30,
+#     google_compute_subnetwork.vdc_vpc4_net_40,
+#     google_compute_subnetwork.vdc_vpc5_net_50,
+#     google_compute_subnetwork.vdc_vpc6_net_60,
+#     google_compute_subnetwork.vdc_vpc7_net_70,
+#     google_compute_subnetwork.vdc_vpc8_net_80,
+#     google_compute_image.ubuntu_bionic_nested
+#   ]
+
+#   metadata = {
+#     enable-oslogin     = "true"
+#     serial-port-enable = "true"
+#   }
+# }
+
+
+# # # Monitor deployment:
+# # # gcloud compute instances tail-serial-port-output vdc-pnetlab-v5
+# # # gcloud compute scp --tunnel-through-iap ./routes-fix-all-final.sh.singlehomed vdc-pnetlab-v5:~/tmp
+# # # gcloud compute ssh --tunnel-through-iap vdc-pnetlab-v5
+
+
+
+
+
+
+
+
+
+## terraform apply -replace google_compute_instance.vdc_pnetlab_v5_2
+resource "google_compute_instance" "vdc_pnetlab_v5_2" {
+  deletion_protection = false
+
+  machine_type = "n2-highmem-8"
+  name         = "vdc-pnetlab-v5-2"
+  zone         = local.gcp-zone
+
+  #boot_disk {
+  #  initialize_params {
+  #    # image = google_compute_image.pnetlab_v5_custom.self_link
+  #    source = "gs://${google_storage_bucket.project_bucket.name}/custom-images/pnetlab/pnetlab-v5-custom-base.vmdk"  
+  #  }
+  #}
+  boot_disk {
+    initialize_params {
+      image = google_compute_image.pnetlab_v5_custom_base.self_link
+    }
+    #mode = "READ_WRITE" # default
+  }
+
+  can_ip_forward = true
+  enable_display = true
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc1_net_10.self_link
+    network_ip  = "10.10.10.216"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.16.0/24"
+      subnetwork_range_name = "secondary-vpc1-net-10-16"
+    }
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc2_net_20.self_link
+    network_ip  = "10.10.20.216"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.26.0/24"
+      subnetwork_range_name = "secondary-vpc2-net-20-26"
+    }
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc3_net_30.self_link
+    network_ip  = "10.10.30.216"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.36.0/24"
+      subnetwork_range_name = "secondary-vpc3-net-30-36"
+    }
+
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc4_net_40.self_link
+    network_ip  = "10.10.40.216"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.46.0/24"
+      subnetwork_range_name = "secondary-vpc4-net-40-46"
+    }
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc5_net_50.self_link
+    network_ip  = "10.10.50.216"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.56.0/24"
+      subnetwork_range_name = "secondary-vpc5-net-50-56"
+    }
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc6_net_60.self_link
+    network_ip  = "10.10.60.216"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.66.0/24"
+      subnetwork_range_name = "secondary-vpc6-net-60-66"
+    }
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc7_net_70.self_link
+    network_ip  = "10.10.70.216"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.76.0/24"
+      subnetwork_range_name = "secondary-vpc7-net-70-76"
+    }
+    access_config {
+      network_tier = "PREMIUM"
+    }
+  }
+
+  network_interface {
+    nic_type    = "VIRTIO_NET"
+    queue_count = 0
+    stack_type  = "IPV4_ONLY"
+    subnetwork  = google_compute_subnetwork.vdc_vpc8_net_80.self_link
+    network_ip  = "10.10.80.216"
+    alias_ip_range {
+      ip_cidr_range         = "10.10.86.0/24"
+      subnetwork_range_name = "secondary-vpc8-net-80-86"
+    }
+    access_config {
+      network_tier = "PREMIUM"
+    }
+  }
+
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+    preemptible         = false
+    provisioning_model  = "STANDARD"
+  }
+
+  service_account {
+    email  = local.gce-sa
+    scopes = ["https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring.write", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
+    # made cloud storage api read_write vs read_only in case we want to write to the bucket via the SA.
+  }
+
+  shielded_instance_config {
+    enable_integrity_monitoring = true
+    enable_secure_boot          = false
+    enable_vtpm                 = true
+  }
+
+  depends_on = [
+    google_compute_subnetwork.vdc_vpc1_net_10,
+    google_compute_subnetwork.vdc_vpc2_net_20,
+    google_compute_subnetwork.vdc_vpc3_net_30,
+    google_compute_subnetwork.vdc_vpc4_net_40,
+    google_compute_subnetwork.vdc_vpc5_net_50,
+    google_compute_subnetwork.vdc_vpc6_net_60,
+    google_compute_subnetwork.vdc_vpc7_net_70,
+    google_compute_subnetwork.vdc_vpc8_net_80,
+    google_compute_image.ubuntu_bionic_nested
+  ]
+
+  metadata = {
+    enable-oslogin     = "true"
+    serial-port-enable = "true"
+       startup-script     = <<EOF
+         #!/bin/bash
+         download_script() {
+           local script_name="$1"
+           local script_url="gs://${google_storage_bucket.project_bucket.name}/net-fix-scripts-pnetlab/$script_name" 
+
+           #if [[ -f "/root/$script_name" ]]; then
+           #  echo "File '$script_name' already exists. Skipping download."
+           #  return 0
+           #fi
+           echo "Downloading file with gsutil ..."        
+           gsutil cp "gs://${google_storage_bucket.project_bucket.name}/net-fix-scripts-pnetlab/$script_name" /tmp
+
+           if [ $? -eq 0 ]; then # if last command successful (exitcode 0)
+             #sudo chmod +x "/tmp/$script_name"
+             sudo cp /tmp/"$script_name" /root
+             echo "File '$script_name' downloaded and placed in root."
+           else
+             echo "Error downloading script '$script_name' from '$script_url'. Please check URL and connectivity."
+             exit 1
+           fi
+         }
+
+         # Download singlehomed and dualhomed scripts
+         download_script routes-fix-all-final.sh.singlehomed
+         download_script routes-fix-all-final.sh.dualhomed
+        #  sudo sed -i '/if \[ -d \/etc\/profile.d \];/i\
+        #  if \[ -f \/etc\/bashrc \];\n\
+        #  . \/etc\/bashrc\n\
+        #  fi' /etc/profile
+        #  sudo sed -i 's/#force_color_prompt=yes/force_color_prompt=yes/' /root/.bashrc
+
+        sudo sed -i '/if \[ -d \/etc\/profile.d \];/i\ if \[ -f \/etc\/bashrc \];\n\ . \/etc\/bashrc\n\ fi' /etc/profile
+        #syntax error of above command (extra space before the inserted if statement) actually is useful for forcing a skip of the pnet setup window that we use to have to ctrl-c from.
+        sudo sed -i 's/#force_color_prompt=yes/force_color_prompt=yes/' /etc/bash.bashrc
+
+
+        sudo gsutil cp -r gs://vdc-tf-bucket/assets-pnetlab/opt/unetlab/html/images/icons /opt/unetlab/html/images/
+        sudo cp /root/routes-fix-all-final.sh.dualhomed /root/routes-fix-all-final.sh
+        sudo chmod +x /root/routes-fix-all-final.sh
+        sudo /root/routes-fix-all-final.sh
+
+        sudo mkdir /opt/unetlab/addons/qemu/vyos-1.4-rolling-202306290317
+        sudo gsutil cp gs://vdc-tf-bucket/assets-pnetlab/iso/vyos-1.4-rolling-202306290317-amd64.iso /opt/unetlab/addons/qemu/vyos-1.4-rolling-202306290317
+
+        #ishare2 github: https://github.com/pnetlabrepo/ishare2
+        #sudo wget -O /usr/sbin/ishare2 https://raw.githubusercontent.com/pnetlabrepo/ishare2/main/ishare2 > /dev/null 2>&1 
+        #sudo chmod +x /usr/sbin/ishare2
+        
+         
+      EOF
+  }
+}
+
+
+# # # Monitor deployment:
+# # # gcloud compute instances tail-serial-port-output vdc-pnetlab-v5-2
+# # # gcloud compute scp --tunnel-through-iap ./routes-fix-all-final.sh.singlehomed vdc-pnetlab-v5:~/tmp
+# # # gcloud compute ssh --tunnel-through-iap vdc-pnetlab-v5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################################################################################################################################################################
+##################################################################################################################################################################
+#################################################################### Windows Jump box ############################################################################
+##################################################################################################################################################################
+##################################################################################################################################################################
+
+
+
+# [ypm]: Use a jump host name that includes the project otherwise in chrome remote desktop will have a lot of the same win-jh references...
+# [ypm]: Figure out why web-preview with iap-tunnel or ssh -L does not work ... gcloud compute ssh <instance-name> -- -N -4 -L 8080:localhost:80
+
+## Jump host: 
+## https://cloud.google.com/architecture/chrome-desktop-remote-windows-compute-engine
+
+# Pre-req: follow steps from https://cloud.google.com/architecture/chrome-desktop-remote-windows-compute-engine#authorize_crd_service
+
+# 1/ Generate auth code: ${local.path-module}/assets-jump-host/crd-auth-command.txt
+#"%PROGRAMFILES(X86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe" --code="4/0AanRRruwBAoELVkQa5R1lMQR8DuJgnbKscaPGdW7gTic_w7mz-imKqhJy0UZi7sKZPkNnQ" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=%COMPUTERNAME%
+
+# resource "null_resource" "crd_auth_input" {
+#   provisioner "local-exec" {
+#     command = "${local.path-module}/assets-jump-host/scripts/get_crd_auth.sh"
+#   }
+# }
+
+resource "null_resource" "crd_auth_input" {
+  provisioner "local-exec" {
+    #working_dir = "${path.module}/assets-jump-host/scripts"
+    command     = "${path.module}/assets-jump-host/scripts/wrapper.sh" 
+  }
+}
+
+
+
+
+# 2/ Generate powershell startup script 
+#https://cloud.google.com/architecture/chrome-desktop-remote-windows-compute-engine#create_the_startup_script
+resource "null_resource" "crd_ps1_generate" {
+  provisioner "local-exec" {
+    # This command will export the image to your local directory
+    command = "${local.path-module}/assets-jump-host/scripts/sysprep.sh; mv crd-sysprep-script.ps1 ${local.path-module}/assets-jump-host/; cat ${local.path-module}/assets-jump-host/scripts/append-script.ps1 >> ${local.path-module}/assets-jump-host/crd-sysprep-script.ps1"
+  }
+}
+# If have to update .ps1 run:
+# tf apply -replace null_resource.crd_ps1_generate
+
+
+
+# data "local_file" "crd_sysprep_script" {
+#   filename = "${local.path-module}/assets-jump-host/crd-sysprep-script.ps1"
+#   depends_on = [null_resource.crd_ps1_generate] 
+# }
+# locals {
+#   crd_sysprep_script_ps1_content = data.local_file.crd_sysprep_script.content
+# }
+
+locals {
+  crd_sysprep_script_ps1_content = file("${local.path-module}/assets-jump-host/crd-sysprep-script.ps1")
+  depends_on = [null_resource.crd_ps1_generate]
+}
+
+
+
+
+variable "crd_pin" {
+  type        = string
+  description = "Chrome Remote Desktop (crd) pin"
+  default     = "123456"
+  sensitive   = false # Important for sensitive data
+}
+
+variable "crd_pass" {
+  type        = string
+  description = "password"
+  default     = "Google1!"
+  sensitive   = false # Important for sensitive data
+}
+
+# variable "instance_name" {
+#   type        = string
+#   description = "Instance name"
+#   default     = "win-jh-${local.gcp-project-number}"
+# }
+locals {
+  win_jh_instance_name     = "win-jh-${local.gcp-project-number}"
+}
+
+
+# Generate auth-code for any new crd setup: https://remotedesktop.google.com/headless 
+locals {
+  crd_auth_command_content       = file("./assets-jump-host/crd-auth-command.txt")
+}
+
+
+
+
+
+
+variable "admin_password" {
+  type        = string
+  description = "New password for the 'admin' user (INSECURE - DO NOT USE IN PRODUCTION)"
+  sensitive   = true       # At least hide it in the state file
+  default     = "Google1!" # Replace with a strong password for TESTING ONLY
+}
+
+
+
+# variable "crd_command" {
+#   type        = string
+#   description = "Chrome Remote Desktop (crd) command"
+#   default     = local.crd_command_content
+# }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+resource "google_compute_instance" "win_jh" {   
+  name = local.win_jh_instance_name #name         = var.instance_name
+  machine_type = "e2-medium"
+  zone         = local.gcp-zone
+
+  boot_disk {
+    initialize_params {
+      image = "windows-cloud/windows-2022"
+      size  = 50
+    }
+    device_name = local.win_jh_instance_name # device_name = var.instance_name
+  }
+
+
+  network_interface {
+    network    = google_compute_network.vdc_vpc1.self_link
+    subnetwork = google_compute_subnetwork.vdc_vpc1_net_10.self_link
+    network_ip = "10.10.10.100"
+  }
+
+  # Scopes are handled differently in Terraform. This grants full cloud-platform access.
+  service_account {
+    scopes = ["cloud-platform"]
+  }
+
+  # Enable display device (equivalent to --enable-display-device)
+  enable_display = true
+
+  metadata = {
+    crd-pin                       = var.crd_pin
+    crd-name                      = local.win_jh_instance_name
+    crd-command                   = local.crd_auth_command_content
+    crd-pass                      = var.crd_pass
+    sysprep-specialize-script-ps1 = local.crd_sysprep_script_ps1_content
+    # startup_script = metadata_startup_script = <<EOF
+    #   <powershell>
+    #   # Check if the marker file exists
+    #   if (Test-Path -Path "C:\Windows\Temp\startup_script_completed.txt") {
+    #   Write-Host "Startup script already executed. Exiting."
+    #   exit
+    #   }
+    #   # Set the new password for the "admin" user (INSECURE - DO NOT USE IN PRODUCTION)
+    #   $newPassword = ConvertTo-SecureString "${var.admin_password}" -AsPlainText -Force
+    #   Set-LocalUser -Name "admin" -Password $newPassword
+    #   # Create the marker file
+    #   New-Item -ItemType File -Path "C:\Windows\Temp\startup_script_completed.txt" -Force
+    #   Write-Host "Password for user 'admin' has been updated."
+    #   </powershell>
+    # EOF 
+  }
+}
+
+
+#gcloud compute instances tail-serial-port-output win-jh-846229250908
+
+
+
+
+
+# # resource "null_resource" "monitor_jumphost" {
+# #   provisioner "local-exec" {
+# #     # This command will export the image to your local directory
+# #     command = "gcloud compute instances tail-serial-port-output ${local.win_jh_instance_name}"
+# #   }
+# # }
+
+
+# # 
+
+# # Startup script above did not work so have to reset password manually:
+# #gcloud compute reset-windows-password win-jh-846229250908
+# ## user = admin.
+# ##*EM)%1)0\e<{E1:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### #pnetlab v6 (focal)
+### resource "google_compute_instance" "vdc_pnetlab_v6" {
+###   deletion_protection = false
+##
+###   machine_type = "n2-highmem-8"
+###   name         = "vdc-pnetlab-v6"
+###   zone         = local.gcp-zone
+##
+###   boot_disk {
+###     initialize_params {
+###       image = google_compute_image.ubuntu_focal_nested.self_link
+###     }
+###     #mode = "READ_WRITE" # default
+###   }
+##
+###   can_ip_forward = true
+###   enable_display = true
+##
+##
+###   network_interface {
+###     nic_type    = "VIRTIO_NET"
+###     queue_count = 0
+###     stack_type  = "IPV4_ONLY"
+###     subnetwork  = google_compute_subnetwork.vdc_vpc1_net_10.self_link
+###     network_ip  = "10.10.10.216"
+###     alias_ip_range {
+###       ip_cidr_range         = "10.10.16.0/24"
+###       subnetwork_range_name = "secondary-vpc1-net-10-16"
+###     }
+###   }
+##
+###   network_interface {
+###     nic_type    = "VIRTIO_NET"
+###     queue_count = 0
+###     stack_type  = "IPV4_ONLY"
+###     subnetwork  = google_compute_subnetwork.vdc_vpc2_net_20.self_link
+###     network_ip  = "10.10.20.216"
+###     alias_ip_range {
+###       ip_cidr_range         = "10.10.26.0/24"
+###       subnetwork_range_name = "secondary-vpc2-net-20-26"
+###     }
+###   }
+##
+###   network_interface {
+###     nic_type    = "VIRTIO_NET"
+###     queue_count = 0
+###     stack_type  = "IPV4_ONLY"
+###     subnetwork  = google_compute_subnetwork.vdc_vpc3_net_30.self_link
+###     network_ip  = "10.10.30.216"
+###     alias_ip_range {
+###       ip_cidr_range         = "10.10.36.0/24"
+###       subnetwork_range_name = "secondary-vpc3-net-30-36"
+###     }
+##
+###   }
+##
+###   network_interface {
+###     nic_type    = "VIRTIO_NET"
+###     queue_count = 0
+###     stack_type  = "IPV4_ONLY"
+###     subnetwork  = google_compute_subnetwork.vdc_vpc4_net_40.self_link
+###     network_ip  = "10.10.40.216"
+###     alias_ip_range {
+###       ip_cidr_range         = "10.10.46.0/24"
+###       subnetwork_range_name = "secondary-vpc4-net-40-46"
+###     }
+###   }
+##
+###   network_interface {
+###     nic_type    = "VIRTIO_NET"
+###     queue_count = 0
+###     stack_type  = "IPV4_ONLY"
+###     subnetwork  = google_compute_subnetwork.vdc_vpc5_net_50.self_link
+###     network_ip  = "10.10.50.216"
+###     alias_ip_range {
+###       ip_cidr_range         = "10.10.56.0/24"
+###       subnetwork_range_name = "secondary-vpc5-net-50-56"
+###     }
+###   }
+##
+###   network_interface {
+###     nic_type    = "VIRTIO_NET"
+###     queue_count = 0
+###     stack_type  = "IPV4_ONLY"
+###     subnetwork  = google_compute_subnetwork.vdc_vpc6_net_60.self_link
+###     network_ip  = "10.10.60.216"
+###     alias_ip_range {
+###       ip_cidr_range         = "10.10.66.0/24"
+###       subnetwork_range_name = "secondary-vpc6-net-60-66"
+###     }
+###   }
+##
+###   network_interface {
+###     nic_type    = "VIRTIO_NET"
+###     queue_count = 0
+###     stack_type  = "IPV4_ONLY"
+###     subnetwork  = google_compute_subnetwork.vdc_vpc7_net_70.self_link
+###     network_ip  = "10.10.70.216"
+###     alias_ip_range {
+###       ip_cidr_range         = "10.10.76.0/24"
+###       subnetwork_range_name = "secondary-vpc7-net-70-76"
+###     }
+###     access_config {
+###       network_tier = "PREMIUM"
+###     }
+###   }
+##
+###   network_interface {
+###     nic_type    = "VIRTIO_NET"
+###     queue_count = 0
+###     stack_type  = "IPV4_ONLY"
+###     subnetwork  = google_compute_subnetwork.vdc_vpc8_net_80.self_link
+###     network_ip  = "10.10.80.216"
+###     alias_ip_range {
+###       ip_cidr_range         = "10.10.86.0/24"
+###       subnetwork_range_name = "secondary-vpc8-net-80-86"
+###     }
+###     access_config {
+###       network_tier = "PREMIUM"
+###     }
+###   }
+##
+###   scheduling {
+###     automatic_restart   = true
+###     on_host_maintenance = "MIGRATE"
+###     preemptible         = false
+###     provisioning_model  = "STANDARD"
+###   }
+##
+###   service_account {
+###     email  = "${local.gcp-project-number}-compute@developer.gserviceaccount.com"
+###     scopes = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring.write", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
+###   }
+##
+###   shielded_instance_config {
+###     enable_integrity_monitoring = true
+###     enable_secure_boot          = false
+###     enable_vtpm                 = true
+###   }
+##
+###   depends_on = [
+###     google_compute_subnetwork.vdc_vpc1_net_10,
+###     google_compute_subnetwork.vdc_vpc2_net_20,
+###     google_compute_subnetwork.vdc_vpc3_net_30,
+###     google_compute_subnetwork.vdc_vpc4_net_40,
+###     google_compute_subnetwork.vdc_vpc5_net_50,
+###     google_compute_subnetwork.vdc_vpc6_net_60,
+###     google_compute_subnetwork.vdc_vpc7_net_70,
+###     google_compute_subnetwork.vdc_vpc8_net_80,
+###     google_compute_image.ubuntu_focal_nested
+###   ]
+##
+##
+###   metadata = {
+###     enable-oslogin     = "true"
+###     serial-port-enable = "true"
+###     startup-script     = <<EOF
+###       #!/bin/bash
+##
+###       download_script() {
+###         local script_name="$1"
+###         local script_url="https://storage.cloud.google.com/${google_storage_bucket.project_bucket.name}/$script_name"
+##
+###         if [[ -f "~/home/$script_name" ]]; then
+###           echo "File '$script_name' already exists. Skipping download."
+###           return 0
+###         fi
+##
+###         wget -q -P /tmp "$script_url"
+##
+###         if [ $? -eq 0 ]; then
+###           sudo mv /tmp/"$script_name" "~/home/$script_name"
+###           sudo chmod +x "~/home/$script_name"
+###           echo "File '$script_name' downloaded and placed successfully."
+###         else
+###           echo "Error downloading script '$script_name'. Please check URL and connectivity."
+###           exit 1
+###         fi
+###       }
+##
+###       # Download singlehomed and dualhomed scripts
+###       #download_script "routes-fix-all-final.sh" # commented out cause running this script will be a manual process and one would choose what script to copy to set routes-fix-all-final.sh
+###       download_script "routes-fix-all-final.sh.singlehomed"
+###       download_script "routes-fix-all-final.sh.dualhomed"
+##
+###    EOF
+###   }
+##
+##
+###   ##pnetlab installation (v6): will take about 15 minutes
+###   #metadata_startup_script = "#!/bin/bash; curl -sL https://labhub.eu.org/api/raw/?path=/UNETLAB%20I/upgrades_pnetlab/Focal/install_pnetlab_v6.sh | bash" # executed once at instance creation time to install pnetlab
+###   #
+### }

@@ -1,0 +1,205 @@
+set interfaces ethernet eth0 mtu '8896'
+set interfaces ethernet eth0 address '10.10.15.102/24'
+set interfaces ethernet eth0 vrf 'oob'
+
+set interfaces ethernet eth1 mtu '8846'
+set interfaces ethernet eth1 address '1.0.1.2/30'
+set interfaces ethernet eth1 ipv6 address
+set interfaces ethernet eth1 address 'fd:0:0:101::2222/64'
+
+set interfaces ethernet eth2 mtu '8846'
+set interfaces ethernet eth2 address '2.0.1.2/30'
+set interfaces ethernet eth2 ipv6 address
+set interfaces ethernet eth2 address 'fd:0:0:201::2222/64'
+set interfaces ethernet eth2 disable
+
+set interfaces ethernet eth3 mtu '8846'
+set interfaces ethernet eth3 address '3.0.1.1/30'
+set interfaces ethernet eth3 ipv6 address
+set interfaces ethernet eth3 address 'fd:0:0:301::1111/64'
+
+set interfaces ethernet eth4 mtu '8846'
+set interfaces ethernet eth4 address '3.0.2.1/30'
+set interfaces ethernet eth4 ipv6 address
+set interfaces ethernet eth4 address 'fd:0:0:302::1111/64'
+set interfaces ethernet eth4 disable
+
+set interfaces ethernet eth5 mtu '8846'
+set interfaces ethernet eth5 address '3.0.3.1/30'
+set interfaces ethernet eth5 ipv6 address
+set interfaces ethernet eth5 address 'fd:0:0:303::1111/64'
+
+set interfaces ethernet eth6 mtu '8846'
+set interfaces ethernet eth6 address '3.0.4.1/30'
+set interfaces ethernet eth6 ipv6 address
+set interfaces ethernet eth6 address 'fd:0:0:304::1111/64'
+set interfaces ethernet eth6 disable
+
+set interfaces loopback lo address '10.0.3.1/32'
+set interfaces loopback lo address 'fd:0:0:3::1111/64'
+
+set policy prefix-list route-redist-filtering2 rule 10 action 'deny'
+set policy prefix-list route-redist-filtering2 rule 10 prefix '10.15.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 100 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 100 ge '16'
+set policy prefix-list route-redist-filtering2 rule 100 prefix '192.168.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 101 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 101 ge '16'
+set policy prefix-list route-redist-filtering2 rule 101 prefix '172.16.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 110 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 110 ge '8'
+set policy prefix-list route-redist-filtering2 rule 110 prefix '10.0.0.0/8'
+
+set policy prefix-list route-redist-filtering2 rule 120 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 120 ge '16'
+set policy prefix-list route-redist-filtering2 rule 120 prefix '1.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 121 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 121 ge '16'
+set policy prefix-list route-redist-filtering2 rule 121 prefix '2.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 122 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 122 ge '16'
+set policy prefix-list route-redist-filtering2 rule 122 prefix '3.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 123 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 123 ge '16'
+set policy prefix-list route-redist-filtering2 rule 123 prefix '4.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 124 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 124 ge '16'
+set policy prefix-list route-redist-filtering2 rule 124 prefix '5.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 125 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 125 ge '16'
+set policy prefix-list route-redist-filtering2 rule 125 prefix '6.0.0.0/16'
+
+set policy prefix-list route-redist-filtering2 rule 200 action 'permit'
+set policy prefix-list route-redist-filtering2 rule 200 prefix '0.0.0.0/0'
+
+set policy prefix-list6 route-redist-filtering6 rule 620 action 'permit'
+set policy prefix-list6 route-redist-filtering6 rule 620 ge '48'
+set policy prefix-list6 route-redist-filtering6 rule 620 prefix 'fd::/48'
+
+set protocols bfd peer 1.0.1.1
+set protocols bfd peer 2.0.1.1
+set protocols bfd peer 3.0.1.2
+set protocols bfd peer 3.0.2.2
+set protocols bfd peer 3.0.3.2
+set protocols bfd peer 3.0.4.2
+
+set protocols bgp address-family ipv4-unicast redistribute connected
+set protocols bgp address-family ipv4-unicast redistribute static
+
+set protocols bgp address-family ipv6-unicast network fd:0::/32
+set protocols bgp address-family ipv6-unicast redistribute connected
+set protocols bgp address-family ipv6-unicast redistribute static
+
+set protocols bgp neighbor 1.0.1.1 address-family ipv4-unicast
+set protocols bgp neighbor 1.0.1.1 bfd
+set protocols bgp neighbor 1.0.1.1 remote-as '65001'
+set protocols bgp neighbor 1.0.1.1 timers holdtime '9'
+set protocols bgp neighbor 1.0.1.1 timers keepalive '3'
+set protocols bgp neighbor 1.0.1.1 update-source '1.0.1.2'
+
+set protocols bgp neighbor 2.0.1.1 address-family ipv4-unicast
+set protocols bgp neighbor 2.0.1.1 bfd
+set protocols bgp neighbor 2.0.1.1 remote-as '65001'
+set protocols bgp neighbor 2.0.1.1 timers holdtime '9'
+set protocols bgp neighbor 2.0.1.1 timers keepalive '3'
+set protocols bgp neighbor 2.0.1.1 update-source '2.0.1.2'
+
+set protocols bgp neighbor 3.0.1.2 address-family ipv4-unicast
+set protocols bgp neighbor 3.0.1.2 bfd
+set protocols bgp neighbor 3.0.1.2 remote-as '65004'
+set protocols bgp neighbor 3.0.1.2 timers holdtime '9'
+set protocols bgp neighbor 3.0.1.2 timers keepalive '3'
+set protocols bgp neighbor 3.0.1.2 update-source '3.0.1.1'
+
+set protocols bgp neighbor 3.0.2.2 address-family ipv4-unicast
+set protocols bgp neighbor 3.0.2.2 bfd
+set protocols bgp neighbor 3.0.2.2 remote-as '65004'
+set protocols bgp neighbor 3.0.2.2 timers holdtime '9'
+set protocols bgp neighbor 3.0.2.2 timers keepalive '3'
+set protocols bgp neighbor 3.0.2.2 update-source '3.0.2.1'
+
+set protocols bgp neighbor 3.0.3.2 address-family ipv4-unicast
+set protocols bgp neighbor 3.0.3.2 bfd
+set protocols bgp neighbor 3.0.3.2 remote-as '65010'
+set protocols bgp neighbor 3.0.3.2 timers holdtime '9'
+set protocols bgp neighbor 3.0.3.2 timers keepalive '3'
+set protocols bgp neighbor 3.0.3.2 update-source '3.0.3.1'
+
+set protocols bgp neighbor 3.0.4.2 address-family ipv4-unicast
+set protocols bgp neighbor 3.0.4.2 bfd
+set protocols bgp neighbor 3.0.4.2 remote-as '65010'
+set protocols bgp neighbor 3.0.4.2 timers holdtime '9'
+set protocols bgp neighbor 3.0.4.2 timers keepalive '3'
+set protocols bgp neighbor 3.0.4.2 update-source '3.0.4.1'
+
+set protocols bgp neighbor fd:0:0:101::1111 address-family ipv6-unicast
+set protocols bgp neighbor fd:0:0:101::1111 ebgp-multihop '2'
+set protocols bgp neighbor fd:0:0:101::1111 remote-as '65001'
+set protocols bgp neighbor fd:0:0:101::1111 timers holdtime '9'
+set protocols bgp neighbor fd:0:0:101::1111 timers keepalive '3'
+set protocols bgp neighbor fd:0:0:101::1111 update-source 'fd:0:0:101::2222'
+
+set protocols bgp neighbor fd:0:0:201::1111 address-family ipv6-unicast
+set protocols bgp neighbor fd:0:0:201::1111 ebgp-multihop '2'
+set protocols bgp neighbor fd:0:0:201::1111 remote-as '65001'
+set protocols bgp neighbor fd:0:0:201::1111 timers holdtime '9'
+set protocols bgp neighbor fd:0:0:201::1111 timers keepalive '3'
+set protocols bgp neighbor fd:0:0:201::1111 update-source 'fd:0:0:201::2222'
+
+set protocols bgp neighbor fd:0:0:301::2222 address-family ipv6-unicast
+set protocols bgp neighbor fd:0:0:301::2222 ebgp-multihop '2'
+set protocols bgp neighbor fd:0:0:301::2222 remote-as '65004'
+set protocols bgp neighbor fd:0:0:301::2222 timers holdtime '9'
+set protocols bgp neighbor fd:0:0:301::2222 timers keepalive '3'
+set protocols bgp neighbor fd:0:0:301::2222 update-source 'fd:0:0:301::1111'
+
+set protocols bgp neighbor fd:0:0:302::2222 address-family ipv6-unicast
+set protocols bgp neighbor fd:0:0:302::2222 ebgp-multihop '2'
+set protocols bgp neighbor fd:0:0:302::2222 remote-as '65004'
+set protocols bgp neighbor fd:0:0:302::2222 timers holdtime '9'
+set protocols bgp neighbor fd:0:0:302::2222 timers keepalive '3'
+set protocols bgp neighbor fd:0:0:302::2222 update-source 'fd:0:0:302::1111'
+
+set protocols bgp neighbor fd:0:0:303::2222 address-family ipv6-unicast
+set protocols bgp neighbor fd:0:0:303::2222 ebgp-multihop '2'
+set protocols bgp neighbor fd:0:0:303::2222 remote-as '65010'
+set protocols bgp neighbor fd:0:0:303::2222 timers holdtime '9'
+set protocols bgp neighbor fd:0:0:303::2222 timers keepalive '3'
+set protocols bgp neighbor fd:0:0:303::2222 update-source 'fd:0:0:303::1111'
+
+set protocols bgp neighbor fd:0:0:403::2222 address-family ipv6-unicast
+set protocols bgp neighbor fd:0:0:403::2222 ebgp-multihop '2'
+set protocols bgp neighbor fd:0:0:403::2222 remote-as '65010'
+set protocols bgp neighbor fd:0:0:403::2222 timers holdtime '9'
+set protocols bgp neighbor fd:0:0:403::2222 timers keepalive '3'
+set protocols bgp neighbor fd:0:0:403::2222 update-source 'fd:0:0:403::1111'
+
+set protocols bgp parameters bestpath as-path multipath-relax
+set protocols bgp parameters router-id '10.0.3.1'
+set protocols bgp local-as '65002'
+
+set service ssh port '22'
+
+set system host-name 'Core-A'
+
+set system ntp server 0.pool.ntp.org
+set system ntp server 1.pool.ntp.org
+set system ntp server 2.pool.ntp.org
+
+set system time-zone 'America/Denver'
+
+set system domain-name 'acme.local'
+set system domain-search domain 'acme.local'
+set system name-server 10.99.100.10
+
+set vrf bind-to-all
+set vrf name oob protocols static route 0.0.0.0/0 next-hop 10.10.15.1 interface 'eth0'
+set vrf name oob table '100'

@@ -1,0 +1,17 @@
+# This file is intentionally empty after modularization
+# All Terraform resources have been moved to separate .tf files:
+# - 01-providers.tf
+# - 02-locals.tf  
+# - 03-apis.tf
+# - 04-iam.tf
+# - 05-org-policies.tf
+# - 06-networks.tf
+# - 07-subnets.tf
+# - 08-firewall.tf
+# - 09-nat.tf
+# - 10-storage.tf
+# - 11-images.tf
+# - 12-compute-pnetlab.tf
+# - 13-compute-jumpbox.tf
+# - variables.tf
+# - outputs.tf

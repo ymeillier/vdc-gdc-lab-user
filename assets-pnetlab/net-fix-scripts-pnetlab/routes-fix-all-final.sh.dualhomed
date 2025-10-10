@@ -1,0 +1,522 @@
+#! /bin/bash
+
+# -------------------------------------------------------------------
+# Disable and mask sshguard to prevent it from blocking traffic
+# -------------------------------------------------------------------
+if systemctl is-active --quiet sshguard; then
+    echo "Stopping sshguard service..."
+    sudo systemctl stop sshguard
+fi
+
+if systemctl is-enabled --quiet sshguard; then
+    echo "Disabling sshguard service..."
+    sudo systemctl disable sshguard
+fi
+
+if ! systemctl is-masked --quiet sshguard; then
+    echo "Masking sshguard service..."
+    sudo systemctl mask sshguard
+fi
+
+# Flush any existing rules from the sshguard chain
+if sudo iptables -L sshguard >/dev/null 2>&1; then
+    echo "Flushing iptables rules from sshguard chain..."
+    sudo iptables -F sshguard
+fi
+# -------------------------------------------------------------------
+#check impact of sshguard with sudo iptables -L INPUT -v -n and sudo iptables -L sshguard -v -n
+
+
+# # -------------------------------------------------------------------
+# # Uninstall sshguard to prevent it from blocking traffic
+# # -------------------------------------------------------------------
+# if dpkg -s sshguard &> /dev/null; then
+#     echo "Uninstalling sshguard..."
+#     # Purge the package and its configuration files
+#     sudo apt-get purge -y sshguard
+# 
+#     # Flush any lingering iptables rules, just in case
+#     if sudo iptables -L sshguard >/dev/null 2>&1; then
+#         sudo iptables -F sshguard
+#     fi
+# fi
+# # -------------------------------------------------------------------
+# 
+
+set -x # turn on tracing. When script is run with . ./script.sh it will show the commands
+#
+#Required for stability reason (bridges can sometimes inherit the vMac of a qemu device thus breaking connectivity)
+
+#macens4=$(sudo cat /sys/class/net/ens4/address)
+eth_mac_eth0=$(ip link show "eth0" | grep link/ether | awk '{print $2}')
+sudo ip link set eth0 address "$eth_mac_eth0"
+sudo ip link set pnet0 address "$eth_mac_eth0"
+
+eth_mac_eth1=$(ip link show "eth1" | grep link/ether | awk '{print $2}')
+sudo ip link set eth1 address "$eth_mac_eth1"
+sudo ip link set pnet1 address "$eth_mac_eth1"
+
+eth_mac_eth2=$(ip link show "eth2" | grep link/ether | awk '{print $2}')
+sudo ip link set eth2 address "$eth_mac_eth2"
+sudo ip link set pnet2 address "$eth_mac_eth2"
+
+eth_mac_eth3=$(ip link show "eth3" | grep link/ether | awk '{print $2}')
+sudo ip link set eth3 address "$eth_mac_eth3"
+sudo ip link set pnet3 address "$eth_mac_eth3"
+
+eth_mac_eth4=$(ip link show "eth4" | grep link/ether | awk '{print $2}')
+sudo ip link set eth4 address "$eth_mac_eth4"
+sudo ip link set pnet4 address "$eth_mac_eth4"
+
+eth_mac_eth5=$(ip link show "eth5" | grep link/ether | awk '{print $2}')
+sudo ip link set eth5 address "$eth_mac_eth5"
+sudo ip link set pnet5 address "$eth_mac_eth5"
+
+eth_mac_eth6=$(ip link show "eth6" | grep link/ether | awk '{print $2}')
+sudo ip link set eth6 address "$eth_mac_eth6"
+sudo ip link set pnet6 address "$eth_mac_eth6"
+
+eth_mac_eth7=$(ip link show "eth7" | grep link/ether | awk '{print $2}')
+sudo ip link set eth7 address "$eth_mac_eth7"
+sudo ip link set pnet7 address "$eth_mac_eth7"
+
+#check routes:
+# routel
+# ip route show
+# ip route show vrf <vrf-name>
+
+pnet0_ip=$(sudo ip addr show dev eth4 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
+address_octet=$(echo "$pnet0_ip" | awk -F"." '{print $4}')
+
+#mgmt - already handled by pnet-lab install but some clean up needed
+#sudo ip route add 10.10.15.0/24 via 10.10.10.1 dev pnet0
+sudo ip addr add 10.10.15.1/24 dev pnet0
+#[ypm: deleted cause eth0 never had an ip assigned from that range ] sudo ip route delete 10.10.15.0/24 dev eth0 table local
+#sudo ip route delete 10.10.15.0/24 via 10.10.10.1 dev pnet0
+
+#pnet1 if wanted to not be on vrf (no internet access)
+sudo ip addr delete 10.10.20."${address_octet}"/32 dev eth1
+sudo ip route add 10.10.20.1 dev pnet1
+sudo ip route add 10.10.20.0/24 via 10.10.20.1 dev pnet1
+sudo ip addr add 10.10.20."${address_octet}"/32 brd + dev pnet1
+sudo ip addr add 10.10.25.1/24 dev pnet1
+#pnet1 - used for pnet fabric egress so needs it own default route and thus vrf since mgmt also has its default route.
+#sudo ip addr delete 10.10.20."${address_octet}"/32 dev eth1
+sudo ip link add name cloud1-vrf type vrf table 20
+sudo ip link set dev cloud1-vrf up
+sudo ip link set dev pnet1 vrf cloud1-vrf up
+#at that point only kernel routes are moved and the missing ones are:
+#10.10.20.0/ 24      10.10.20.1                                    pnet1
+#10.10.20.1                                                 link  pnet1
+sudo ip route add 10.10.20.1 dev pnet1 vrf cloud1-vrf
+sudo ip route add default via 10.10.20.1 dev pnet1 vrf cloud1-vrf
+sudo ip route add 10.10.20.0/24 via 10.10.20.1 dev pnet1 vrf cloud1-vrf
+##sudo ip addr add 10.10.20."${address_octet}"/32 brd + dev pnet1
+##sudo ip addr add 10.10.25.1/24 dev pnet1
+
+##pnet1 commands if was setting on vrf from scratch
+#sudo ip addr delete 10.10.20."${address_octet}"/32 dev eth1
+#sudo ip link add name cloud1-vrf type vrf table 20
+#sudo ip link set dev cloud1-vrf up
+#sudo ip link set dev pnet1 vrf cloud1-vrf up
+#sudo ip route add 10.10.20.1 dev pnet1 vrf cloud1-vrf
+#sudo ip route add default via 10.10.20.1 dev pnet1 vrf cloud1-vrf
+#sudo ip route add 10.10.20.0/24 via 10.10.20.1 dev pnet1 vrf cloud1-vrf
+#sudo ip addr add 10.10.20."${address_octet}"/32 brd + dev pnet1
+#sudo ip addr add 10.10.25.1/24 dev pnet1
+
+#pnet2
+sudo ip addr delete 10.10.30."${address_octet}"/32 dev eth2
+sudo ip route add 10.10.30.1 dev pnet2
+sudo ip route add 10.10.30.0/24 via 10.10.30.1 dev pnet2
+sudo ip addr add 10.10.30."${address_octet}"/32 brd + dev pnet2
+sudo ip addr add 10.10.35.1/24 dev pnet2
+
+#pnet3
+sudo ip addr delete 10.10.40."${address_octet}"/32 dev eth3
+sudo ip route add 10.10.40.1 dev pnet3
+sudo ip route add 10.10.40.0/24 via 10.10.40.1 dev pnet3
+sudo ip addr add 10.10.40."${address_octet}"/32 brd + dev pnet3
+sudo ip addr add 10.10.45.1/24 dev pnet3
+
+#pnet4
+sudo ip addr delete 10.10.50."${address_octet}"/32 dev eth4
+sudo ip route add 10.10.50.1 dev pnet4
+sudo ip route add 10.10.50.0/24 via 10.10.50.1 dev pnet4
+sudo ip addr add 10.10.50."${address_octet}"/32 brd + dev pnet4
+sudo ip addr add 10.10.55.1/24 dev pnet4
+
+#pnet5
+sudo ip addr delete 10.10.60."${address_octet}"/32 dev eth5
+sudo ip route add 10.10.60.1 dev pnet5
+sudo ip route add 10.10.60.0/24 via 10.10.60.1 dev pnet5
+sudo ip addr add 10.10.60."${address_octet}"/32 brd + dev pnet5
+sudo ip addr add 10.10.65.1/24 dev pnet5
+
+#pnet6
+sudo ip addr delete 10.10.70."${address_octet}"/32 dev eth6
+sudo ip route add 10.10.70.1 dev pnet6
+sudo ip route add 10.10.70.0/24 via 10.10.70.1 dev pnet6
+#sudo ip addr add 10.10.70."${address_octet}"/32 brd + dev pnet6
+sudo ip addr add 10.10.75.1/32 dev pnet6
+#10.10.75.1 used as gw for any of our vyos interfaces leveraging pnet6 snat.
+# 10.10.70."${address_octet}"./32 not assigned to pnet but to a vyos interface using 10.10.75.1 as next hop.
+
+sudo ip route add 10.10.70."${address_octet}"/32 dev pnet6
+sudo ip route add 10.10.75."${address_octet}"/32 dev pnet6
+
+#sudo ip route add 24.8.34.117/32 via 10.10.70.1 dev pnet6
+#sudo ip route add 8.8.8.8/32 via 10.10.70.1 dev pnet6
+
+sudo ip link add name cloud6-vrf type vrf table 70
+sudo ip link set dev cloud6-vrf up
+sudo ip link set dev pnet6 vrf cloud6-vrf up
+
+sudo ip route add 10.10.70.1/32 dev pnet6 vrf cloud6-vrf
+sudo ip route add default via 10.10.70.1 dev pnet6 vrf cloud6-vrf
+sudo ip route add 10.10.75."${address_octet}"/32 dev pnet6 vrf cloud6-vrf
+sudo ip route add 10.10.70."${address_octet}"/32 dev pnet6 vrf cloud6-vrf
+
+##pnet7 - original (Before alternate VPN use case)
+sudo ip addr delete 10.10.80."${address_octet}"/32 dev eth7
+#
+sudo ip route add 10.10.80.1 dev pnet7
+sudo ip route add 10.10.80.0/24 via 10.10.80.1 dev pnet7
+#
+#sudo ip addr add 10.10.80."${address_octet}"/32 brd + dev pnet7
+sudo ip addr add 10.10.85.1/24 dev pnet7
+#
+#sudo ip link add name cloud7-vrf type vrf table 80
+#sudo ip link set dev cloud7-vrf up
+#sudo ip link set dev pnet7 vrf cloud7-vrf up
+#
+#sudo ip route add 10.10.80.1 dev pnet7 vrf cloud7-vrf
+#sudo ip route add default via 10.10.80.1 dev pnet7 vrf cloud7-vrf
+#sudo ip route add 10.10.80.0/24 via 10.10.80.1 dev pnet7 vrf cloud7-vrf
+#sudo ip route add 10.10.85.0/24 via 10.10.80.1 dev pnet7 vrf cloud7-vrf
+
+# [ypm] VPN use case: revisit what had done below #pnet7 default
+# sudo ip addr delete 10.10.80."${address_octet}"/32 dev eth7
+# sudo ip route add 10.10.80.1 dev pnet7
+# sudo ip route add 10.10.80.0/24 via 10.10.80.1 dev pnet7
+# #sudo ip addr add 10.10.80."${address_octet}"/32 brd + dev pnet7
+# sudo ip addr add 10.10.85.1/32 dev pnet7
+# #temp route while testing connectivity via pnet7
+# sudo ip route add 8.8.8.8/32 via 10.10.80.1 dev pnet7
+# #8.8.8.8 route added cause we don't have vrf to set default gw here (yet)
+# #also need to add ip of my laptop when ping from outside in so that we can find route to respond.
+# sudo ip route add 24.8.34.117/32 via 10.10.80.1 dev pnet7
+
+# ##root@pnet-lab:/home# routel | grep pnet7
+# ##        8.8.8.8         10.10.80.1                                    pnet7 
+# ##    10.10.80.0/ 24      10.10.80.1                                    pnet7 
+# ##     10.10.80.1                                                 link  pnet7 
+# ##   10.10.80.210                                                 link  pnet7 
+# ##   10.10.85.210                                                 link  pnet7 
+# ##   10.10.85.211                                                 link  pnet7 
+# ##    24.8.34.117         10.10.80.1                                    pnet7 
+# ##     10.10.85.1              local      10.10.85.1   kernel     host  pnet7 local
+# ##   10.10.85.220              local    10.10.85.220   kernel     host  pnet7 local
+
+# #add /32 routes for each vyos /32 interface. typically they are /24 interface and we have a /24 route for it on pnet7.
+# sudo ip route add 10.10.80."${address_octet}"/32 dev pnet7
+# sudo ip route add 10.10.85."${address_octet}"/32 dev pnet7
+# sudo ip route add 10.10.85.211/32 dev pnet7
+
+
+
+
+
+
+#set correct mtu on eth0 (others inlcuding pnet are fine)
+ifconfig eth0 mtu 8896 up
+
+
+
+## #Enable cloud7 for vxlan connectivity to L2 adjacent GCP instances (instance have primary of 10.10.80.x/32 but 192.168.10.0/24 used on vyos and GCP instances)
+#sudo ip link add vxlan-110 type vxlan id 110 dstport 0
+#sudo ip link set vxlan-110 type vxlan remote 10.10.80.200
+#sudo ip link set vxlan-110 up
+#sudo brctl addif pnet7 vxlan-110
+#sudo ip addr add 192.168.110."${address_octet}"/24 dev pnet7
+##Add additional remote vtep endpoints (in addtion to the one set above during vxlan link setup):
+#sudo bridge fdb append to 00:00:00:00:00:00 dst 10.10.80.201 dev vxlan-110
+#
+## Cloud6/pnet6 - 10.10.70.x - 192.168.20.0/24
+#sudo ip link add vxlan-120 type vxlan id 120 dstport 0
+#sudo ip link set vxlan-120 type vxlan remote 10.10.70.200
+#sudo ip link set vxlan-120 up
+#sudo brctl addif pnet6 vxlan-120
+#sudo ip addr add 192.168.120."${address_octet}"/24 dev pnet6
+##Add additional remote vtep endpoints (in addtion to the one set above during vxlan link setup):
+#sudo bridge fdb append to 00:00:00:00:00:00 dst 10.10.70.201 dev vxlan-120
+
+## Cloud5/pnet5 - 10.10.60.x - 192.168.30.0/24
+#sudo ip link add vxlan-130 type vxlan id 30 dstport 0
+#sudo ip link set vxlan-130 type vxlan remote 10.10.60.200
+#sudo ip link set vxlan-130 up
+#sudo brctl addif pnet5 vxlan-130
+#sudo ip addr add 192.168.130."${address_octet}"/24 dev pnet5
+##Add additional remote vtep endpoints (in addtion to the one set above during vxlan link setup):
+#sudo bridge fdb append to 00:00:00:00:00:00 dst 10.10.60.201 dev vxlan-130
+
+## Cloud4/pnet4 - 10.10.50.x - 192.168.0.0/24
+#sudo ip link add vxlan-100 type vxlan id 100 dstport 0
+#sudo ip link set vxlan-100 type vxlan remote 10.10.50.200
+#sudo ip link set vxlan-100 up
+#sudo brctl addif pnet4 vxlan-100
+#sudo ip addr add 192.168.100."${address_octet}"/24 dev pnet4
+##Add additional remote vtep endpoints (in addtion to the one set above during vxlan link setup):
+#sudo bridge fdb append to 00:00:00:00:00:00 dst 10.10.50.201 dev vxlan-100
+
+## Cloud3/pnet3 - 10.10.40.x - 192.168.99.0/24
+#sudo ip link add vxlan-99 type vxlan id 99 dstport 0
+#sudo ip link set vxlan-99 type vxlan remote 10.10.40.200
+#sudo ip link set vxlan-99 up
+#sudo brctl addif pnet3 vxlan-99
+#sudo ip addr add 192.168.99."${address_octet}"/24 dev pnet3
+##Add additional remote vtep endpoints (in addtion to the one set above during vxlan link setup):
+#sudo bridge fdb append to 00:00:00:00:00:00 dst 10.10.40.201 dev vxlan-99
+
+
+
+#the nodes used for vxlan no longer are on the same cidr for mgmt and pnet3 because i needed to use the 3rd octet for aligning with the overlay octet
+#mgmt for a vxlan node will be on 10.40 and then the rack.
+#for rs that would 9x so 91 to map to overlay 10.99.10_1_.0/24
+# 92 to map to 10.99.102.0/24 and so on
+# for the pnet3 network used for vteps, we use 10.40.x.x so 10.40.99 for rs, 10.40.100 for r0,... so we can use a /16 route that encompasses all 10.40 networks. that routes will allow to hit the remote vtep on that networks when pnetlab server is on 10.10.40.
+
+
+#pnet3 and pnet4 routes:
+sudo ip route add 10.40.0.0/16 via 10.10.40.1 dev pnet3
+#below route is unique in dualhomed config:
+sudo ip route add 10.50.0.0/16 via 10.10.50.1 dev pnet4
+
+# pnet appliance will always use pnet0 as its TEP interface and needs to route to the below TEP networks (appliance on rs, r0, r1,... ) via its pnet0 interface:
+sudo ip route add 10.10.90.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.91.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.92.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.93.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.94.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.95.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.96.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.97.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.98.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.99.0/24 via 10.10.10.1 dev pnet0
+
+sudo ip route add 10.10.100.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.101.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.102.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.103.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.104.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.105.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.106.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.107.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.108.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.109.0/24 via 10.10.10.1 dev pnet0
+
+sudo ip route add 10.10.110.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.111.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.112.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.113.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.114.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.115.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.116.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.117.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.118.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.119.0/24 via 10.10.10.1 dev pnet0
+
+sudo ip route add 10.10.120.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.121.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.122.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.123.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.124.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.125.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.126.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.127.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.128.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.129.0/24 via 10.10.10.1 dev pnet0
+
+sudo ip route add 10.10.130.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.131.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.132.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.133.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.134.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.135.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.136.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.137.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.138.0/24 via 10.10.10.1 dev pnet0
+sudo ip route add 10.10.139.0/24 via 10.10.10.1 dev pnet0
+##Add additional remote vtep endpoints (in addtion to the one set above during vxlan link setup):
+#sudo bridge fdb append to 00:00:00:00:00:00 dst 10.10.40.101 dev vxlan-r0
+
+#OLD:
+#sudo ip link add vxlan-r0 type vxlan id 100 dstport 0
+#sudo ip link set vxlan-r0 type vxlan remote 10.10.40.101
+#sudo ip link set vxlan-r0 up
+#sudo brctl addif pnet3 vxlan-r0
+#sudo ip addr add 10.100.100."${address_octet}"/24 dev pnet3
+###Add additional remote vtep endpoints (in addtion to the one set above during vxlan link setup):
+#sudo bridge fdb append to 00:00:00:00:00:00 dst 10.10.40.101 dev vxlan-r0
+#sudo bridge fdb append to 00:00:00:00:00:00 dst 10.10.40.102 dev vxlan-r0
+
+
+#Service Rack Overlay
+sudo ip link add vxlan-rs type vxlan id 99 dstport 0
+sudo ip link set vxlan-rs type vxlan remote 10.40.90.10
+#the following entry now exist in our bridge table:
+#00:00:00:00:00:00 dev vxlan-rs dst 10.40.90.10 self permanent
+#don't need it until we have a workload on that rach to communicated to. 10.40.90.10 was randomly chosen to set vxlan.
+sudo bridge fdb delete 00:00:00:00:00:00 dev vxlan-rs dst 10.40.90.10 
+#other nodes use 10.40.9x.y/24 as ip, fron secondary ranges, instead of 10.10.40 so that we could use the 3rd octet to align with the overlay network
+# and thus be able to have node ondifferent subnet and isolate d at L2 instead. 
+sudo ip link set vxlan-rs up
+sudo ip link set dev vxlan-rs mtu 8846
+sudo brctl addif pnet3 vxlan-rs
+
+
+sudo ip link add vxlan-rs-2 type vxlan id 999 dstport 0
+sudo ip link set vxlan-rs-2 type vxlan remote 10.50.90.10
+sudo bridge fdb delete 00:00:00:00:00:00 dev vxlan-rs-2 dst 10.50.90.10 
+#other nodes use 10.40.9x.y/24 as ip, fron secondary ranges, instead of 10.10.40 so that we could use the 3rd octet to align with the overlay network
+# and thus be able to have node ondifferent subnet and isolate d at L2 instead. 
+sudo ip link set vxlan-rs-2 up
+sudo ip link set dev vxlan-rs-2 mtu 8846
+sudo brctl addif pnet4 vxlan-rs-2
+
+
+
+
+#Rack 0 (Border Rack):
+sudo ip link add vxlan-r0 type vxlan id 100 dstport 0
+sudo ip link set vxlan-r0 type vxlan remote 10.40.100.10
+sudo bridge fdb delete 00:00:00:00:00:00 dev vxlan-r0 dst 10.40.100.10 
+sudo ip link set vxlan-r0 up
+sudo ip link set dev vxlan-r0 mtu 8846
+sudo brctl addif pnet3 vxlan-r0
+#sudo ip addr add 10.100.100."${address_octet}"/24 dev pnet3
+#sudo ip addr add 10.100.101."${address_octet}"/24 dev pnet3
+##Add additional remote vtep endpoints (in addtion to the one set above during vxlan link setup):
+#sudo bridge fdb append to 00:00:00:00:00:00 dst 10.10.40.101 dev vxlan-r0
+
+sudo ip link add vxlan-r0-2 type vxlan id 1000 dstport 0
+sudo ip link set vxlan-r0-2 type vxlan remote 10.50.100.10
+sudo bridge fdb delete 00:00:00:00:00:00 dev vxlan-r0-2 dst 10.50.100.10
+sudo ip link set vxlan-r0-2 up
+sudo ip link set dev vxlan-r0-2 mtu 8846
+sudo brctl addif pnet4 vxlan-r0-2
+#sudo ip addr add 10.100.100."${address_octet}"/24 dev pnet3
+#sudo ip addr add 10.100.101."${address_octet}"/24 dev pnet3
+##Add additional remote vtep endpoints (in addtion to the one set above during vxlan link setup):
+#sudo bridge fdb append to 00:00:00:00:00:00 dst 10.10.40.101 dev vxlan-r0
+
+
+
+
+#Rack 1 
+sudo ip link add vxlan-r1 type vxlan id 110 dstport 0
+sudo ip link set vxlan-r1 type vxlan remote 10.40.110.10
+sudo ip link set vxlan-r1 up
+sudo ip link set dev vxlan-r1 mtu 8846
+sudo brctl addif pnet3 vxlan-r1
+sudo bridge fdb delete 00:00:00:00:00:00 dev vxlan-r1 dst 10.40.110.10
+
+#sudo ip addr add 10.110.100."${address_octet}"/24 dev pnet3
+#sudo ip addr add 10.110.101."${address_octet}"/24 dev pnet3
+##Add additional remote vtep endpoints (in addtion to the one set above during vxlan link setup):
+#sudo bridge fdb append to 00:00:00:00:00:00 dst 10.10.40.101 dev vxlan-r0
+
+sudo ip link add vxlan-r1-2 type vxlan id 1100 dstport 0
+sudo ip link set vxlan-r1-2 type vxlan remote 10.50.110.10
+sudo ip link set vxlan-r1-2 up
+sudo ip link set dev vxlan-r1-2 mtu 8846
+sudo brctl addif pnet4 vxlan-r1-2
+sudo bridge fdb delete 00:00:00:00:00:00 dev vxlan-r1-2 dst 10.50.110.10
+
+
+
+
+#Rack 2 
+sudo ip link add vxlan-r2 type vxlan id 120 dstport 0
+sudo ip link set vxlan-r2 type vxlan remote 10.40.120.10
+sudo bridge fdb delete 00:00:00:00:00:00 dev vxlan-r2 dst 10.40.120.10
+sudo ip link set vxlan-r2 up
+sudo ip link set dev vxlan-r2 mtu 8846
+sudo brctl addif pnet3 vxlan-r2
+#sudo ip addr add 10.120.100."${address_octet}"/24 dev pnet3
+#sudo ip addr add 10.120.101."${address_octet}"/24 dev pnet3
+##Add additional remote vtep endpoints (in addtion to the one set above during vxlan link setup):
+#sudo bridge fdb append to 00:00:00:00:00:00 dst 10.10.40.101 dev vxlan-r0
+
+sudo ip link add vxlan-r2-2 type vxlan id 1200 dstport 0
+sudo ip link set vxlan-r2-2 type vxlan remote 10.50.120.10
+sudo bridge fdb delete 00:00:00:00:00:00 dev vxlan-r2-2 dst 10.50.120.10
+sudo ip link set vxlan-r2-2 up
+sudo ip link set dev vxlan-r2-2 mtu 8846
+sudo brctl addif pnet4 vxlan-r2-2
+
+
+
+#Rack 3 
+sudo ip link add vxlan-r3 type vxlan id 130 dstport 0
+sudo ip link set vxlan-r3 type vxlan remote 10.40.130.10
+sudo bridge fdb delete 00:00:00:00:00:00 dev vxlan-r3 dst 10.40.130.10
+sudo ip link set vxlan-r3 up
+sudo ip link set dev vxlan-r3 mtu 8846
+sudo brctl addif pnet3 vxlan-r3
+#sudo ip addr add 10.130.100."${address_octet}"/24 dev pnet3
+#sudo ip addr add 10.130.101."${address_octet}"/24 dev pnet3
+##Add additional remote vtep endpoints (in addtion to the one set above during vxlan link setup):
+#sudo bridge fdb append to 00:00:00:00:00:00 dst 10.10.40.101 dev vxlan-r0
+
+sudo ip link add vxlan-r3-2 type vxlan id 1300 dstport 0
+sudo ip link set vxlan-r3-2 type vxlan remote 10.50.130.10
+sudo bridge fdb delete 00:00:00:00:00:00 dev vxlan-r3-2 dst 10.50.130.10
+sudo ip link set vxlan-r3-2 up
+sudo ip link set dev vxlan-r3-2 mtu 8846
+sudo brctl addif pnet4 vxlan-r3-2
+
+
+
+sudo ip link set dev eth0 mtu 8896
+sudo ip link set dev eth1 mtu 8896
+sudo ip link set dev eth2 mtu 8896
+sudo ip link set dev eth3 mtu 8896
+sudo ip link set dev eth4 mtu 8896
+sudo ip link set dev eth5 mtu 8896
+sudo ip link set dev eth6 mtu 8896
+sudo ip link set dev eth7 mtu 8896
+
+# sudo ip link set dev pnet0 mtu 8896
+# sudo ip link set dev pnet1 mtu 8896
+# sudo ip link set dev pnet2 mtu 8896
+
+# #sudo ip link set dev pnet3 mtu 8896
+# sudo ip link set dev pnet3 mtu 8846
+# #sudo ip link set dev pnet4 mtu 8896
+# sudo ip link set dev pnet4 mtu 8846
+
+# sudo ip link set dev pnet5 mtu 8896
+# sudo ip link set dev pnet6 mtu 8896
+# sudo ip link set dev pnet7 mtu 8896
+
+# sudo ip link set dev vxlan-rs mtu 8846
+# sudo ip link set dev vxlan-r0 mtu 8846
+# sudo ip link set dev vxlan-r1 mtu 8846
+# sudo ip link set dev vxlan-r2 mtu 8846
+# sudo ip link set dev vxlan-r3 mtu 8846
+
+# sudo ip link set dev vxlan-rs-2 mtu 8846
+# sudo ip link set dev vxlan-r0-2 mtu 8846
+# sudo ip link set dev vxlan-r1-2 mtu 8846
+# sudo ip link set dev vxlan-r2-2 mtu 8846
+# sudo ip link set dev vxlan-r3-2 mtu 8846
+
+#sudo ip link set dev cloud1-vrf mtu 8896
+#sudo ip link set dev cloud6-vrf mtu 8896
+
+#From here on out, entries get added automatically when abm nodes get created to set up the overlay from pnet to the node. Entries are added by the startup script of those nodes
+
+
+
+set +x # turn off tracing
