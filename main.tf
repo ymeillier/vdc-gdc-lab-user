@@ -4214,6 +4214,9 @@ resource "google_compute_instance" "vdc_pnetlab_v5" {
 # v9 Had forgottend to delte the /var/lib/pnet marker that prevented ssh keys to be created and copied to bucket on first boot
 # gcloud compute images create vdc-pnetlab-v5-sme-aca-v10 --source-disk=vdc-pnetlab-v5-2 --source-disk-zone=us-central1-c --family=vdc-pnetlab-images --project=vdc-09289 --description=" from SME Academy version v9, no marker "
 
+# v10 Had wrong ip on the some node labels and was mising wk01 in abm11 r1.
+# gcloud compute images create vdc-pnetlab-v5-sme-aca-v11 --source-disk=vdc-pnetlab-v5-2 --source-disk-zone=us-central1-c --family=vdc-pnetlab-images --project=vdc-17645 --description="v11"
+
 
 ## export as raw disk from copmute image so that can use in the future for import to a cmpute image
 # EXP_DESTINATION="gs://vdc-09289-bucket-clone/assets-pnetlab/custom-images/pnetlab/vdc-pnetlab-v5-sme-aca-v10.tar.gz"
