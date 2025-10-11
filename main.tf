@@ -4215,13 +4215,13 @@ resource "google_compute_instance" "vdc_pnetlab_v5" {
 # gcloud compute images create vdc-pnetlab-v5-sme-aca-v10 --source-disk=vdc-pnetlab-v5-2 --source-disk-zone=us-central1-c --family=vdc-pnetlab-images --project=vdc-09289 --description=" from SME Academy version v9, no marker "
 
 # v10 Had wrong ip on the some node labels and was mising wk01 in abm11 r1.
-# gcloud compute images create vdc-pnetlab-v5-sme-aca-v11 --source-disk=vdc-pnetlab-v5-2 --source-disk-zone=us-central1-c --family=vdc-pnetlab-images --project=vdc-17645 --description="v11"
+# gcloud compute images create vdc-pnetlab-v5-v11 --source-disk=vdc-pnetlab-v5-2 --source-disk-zone=us-central1-c --family=vdc-pnetlab-images --project=vdc-17645 --description="v11"
 
 
 ## export as raw disk from copmute image so that can use in the future for import to a cmpute image
-# EXP_DESTINATION="gs://vdc-09289-bucket-clone/assets-pnetlab/custom-images/pnetlab/vdc-pnetlab-v5-sme-aca-v10.tar.gz"
-# EXP_IMAGE="vdc-pnetlab-v5-sme-aca-v10"
-# EXP_PROJECT="vdc-09289"
+# EXP_DESTINATION="gs://vdc-17645-bucket-clone/assets-pnetlab/custom-images/pnetlab/vdc-pnetlab-v5-v11.tar.gz"
+# EXP_IMAGE="vdc-pnetlab-v5-v11"
+# EXP_PROJECT="vdc-17645"
 # gcloud compute images export --destination-uri=$EXP_DESTINATION --image=$EXP_IMAGE --project=$EXP_PROJECT
 #
 ## Make sure to copy from our bucket to the assets bucket vdc-tf-bucket (is the bucket being clones on new lab deployments via tf)
