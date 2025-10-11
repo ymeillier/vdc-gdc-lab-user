@@ -1941,7 +1941,7 @@ if [ ${#AVAILABLE_IMAGES[@]} -eq 0 ]; then
 fi
 
 # Display available images
-printf "    📋 Please choose which PNetLab image to deploy (deploy latest: \033[1;31mv10\033[0m):\n"
+printf "    📋 Please choose which PNetLab image to deploy (deploy latest: \033[1;31mv12\033[0m):\n"
 for i in "${!AVAILABLE_IMAGES[@]}"; do
   printf "      $((i+1))) \033[1;31m${AVAILABLE_IMAGES[i]}\033[0m\n"
 done
