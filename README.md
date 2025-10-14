@@ -697,3 +697,24 @@ The routing table shows that ip 10.212.102.112 is availabe via the next hop IPs 
 We can browse to the service IP via our windows domain controller node:
 
 ![](./GDC-Lab-Guide/LabGuide-assets/file-20251009201218507.png)
+
+## Step 7 - Cleanup
+
+To cleanup asssets from your environment do a terraform destroy from each in reversed order:
+
+Relative to your local project root directory: 
+```
+cd gdc-gcp-project/tf/
+terraform destroy
+```
+
+```
+cd servers/tf/
+terraform destroy
+```
+
+and on your main project root directory (where main.tf )
+```
+cd ./
+terraform destroy
+```
