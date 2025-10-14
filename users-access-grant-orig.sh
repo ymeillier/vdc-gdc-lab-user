@@ -322,17 +322,6 @@ echo "#### Individual User Addition Section ####"
 echo "=========================================="
 
 
-
-
-
-
-
-
-
-
-
-
-
 USERS_GWID="C0112t85a"
 MEMBER="user:admin@ayanny.altostrat.com"
 
