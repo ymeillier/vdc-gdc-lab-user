@@ -8,7 +8,7 @@
 ![](./GDC-Lab-Guide/LabGuide-assets/file-20250929135020523.png)
 
 
-This lab creates a comprehensive virtual networking and datacenter infrastructure simulation environment on Google Cloud Platform initially created for the purpose of testing and gaining hands-on experience with GDC Bare metal, but also serving as a virtual on-premises environment for other hybrid cloud networking use cases.
+This lab creates a comprehensive virtual networking and datacenter infrastructure simulation environment on Google Cloud Platform. It was initially created for the purpose of testing and gaining hands-on experience with GDC Bare metal, but also to serve as a virtual on-premises environment for other hybrid cloud networking use cases.
 
 This current git repo provides scripts and terraform files that automate the deployment of:
 
@@ -26,7 +26,7 @@ The purpose of this project was 3-fold:
 
 ## Project Content
 
-The below tree structure provides a navigation map to the content of the repo:
+The below tree structure provides a navigation map to the content of the repo (review optional):
 
 ```
 vdc-lab-user-vdc-tmp/
@@ -146,6 +146,23 @@ Below is a fast track version of the lab guide that covers the key steps require
 
 # Accelerated Lab Deployment Guide
 
+
+The accelerated lab guide is the landing page readme file of the repo `https://github.com/ymeillier/vdc-gdc-lab-user/tree/main#`
+
+Use the specific readme file link to leverage the github TOC/Navigation pane:
+```
+https://github.com/ymeillier/vdc-gdc-lab-user/blob/main/README.md
+```
+
+This lab goes through 4 main steps:
+- 1/Run main.sh to setup key variables for your deployment. This will
+	- define the variables
+	- deploy the virtual datacenter infrastructure via a terraform apply of main.tf
+	- deploy the GDC GCP project via a terraform apply on ./gdc-gcp-project/tf/main-gdc.tf
+- 2/ start the network topology virtual routers and domain controller.
+- 3/ deploy servers for GDC: configure servers to be deployed via ./servers/tf/terraform-servers.auto.tfvars) and terraform apply on main-servers.tf
+- 4/ deploy GDC cluster using clusters manifest on the workstation appliance.
+
 ## Pre-Requisites
 
 You need to reach out to Yannick Meillier (meillier@) for your user account and google workspace ID to be whitelisted.
@@ -160,14 +177,14 @@ For the Google Workspace ID (for the org admin user profile):
 In cloud shell or your local IDE, clone the repo in a location of your choice:
 
 ```
-https://gitlab.com/ymeillier/vdc-lab-user
+git clone https://github.com/ymeillier/vdc-gdc-lab-user.git
 ```
 and cd into the git repo:
 ```
 cd vdc-lab-user
 ```
 
-Run the deployment bash script main.sh:
+Run the deployment bash script main.sh and follow the prompts:
 
 ```
 ./main.sh
