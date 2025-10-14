@@ -210,6 +210,19 @@ then access the web page via localhost on port 8080:
 [https://localhost:8080](https://localhost:8080)
 ```
 
+
+If you have issues using the gcloud sdk on your local machine's terminal, you can RDP to the windows jump host deployed with the lab. Go to chrome remote desktop 
+
+```
+https://remotedesktop.google.com/access/
+```
+Your jump host CRD should be listed (see instance name on your vdc-xxx project). 
+CRD login pin is set to '123456' and password 'Google1!' (Administrator).
+From there, the windows instance has direct connectivity to the pnetlab server. 
+
+
+
+
 Log in using credentials displayed in the page (admin/pnet)
 
 ![](./GDC-Lab-Guide/LabGuide-assets/file-20250922095251572.png)
