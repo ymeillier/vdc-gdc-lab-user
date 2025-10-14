@@ -1,6 +1,8 @@
 #! /bin/bash
 
 
+# Either assign as a group of user or individually
+
 
 
 
@@ -268,6 +270,52 @@ fi
 
 fi  # End of group setup conditional
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 echo ""
 echo "=========================================="
 echo "#### Individual User Addition Section ####"
@@ -277,8 +325,16 @@ echo "=========================================="
 
 
 
-USERS_GWID="C03f0626m"
-MEMBER="user:admin@rinchentenzin.altostrat.com"
+
+
+
+
+
+
+
+
+USERS_GWID="C0112t85a"
+MEMBER="user:admin@ayanny.altostrat.com"
 
 # Function to check if a single user already has permissions
 check_single_user_permission() {
