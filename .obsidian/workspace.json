@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "2046512c9682d15e",
+        "id": "5a2b8e5f4f863d2d",
         "type": "tabs",
         "children": [
           {
-            "id": "451c55bff9a04b46",
+            "id": "2d3921ad0f743bda",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -78,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 281.5
   },
   "right": {
     "id": "3ff3823e7c09cbbb",
@@ -94,7 +94,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "GDC-Lab-Guide/LabGuide.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +103,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for LabGuide"
+              "title": "Backlinks"
             }
           },
           {
@@ -150,13 +149,23 @@
               "icon": "lucide-list",
               "title": "Outline of LabGuide"
             }
+          },
+          {
+            "id": "0cf35902748082cb",
+            "type": "leaf",
+            "state": {
+              "type": "quiet-outline",
+              "state": {},
+              "icon": "lines-of-text",
+              "title": "Quiet Outline"
+            }
           }
-        ]
+        ],
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -166,12 +175,59 @@
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "bases:Create new base": false
+      "bases:Create new base": false,
+      "terminal:Open terminal": false,
+      "omnisearch:Omnisearch": false,
+      "obsidian-excalidraw-plugin:New drawing": false
     }
   },
-  "active": "451c55bff9a04b46",
+  "active": "2d3921ad0f743bda",
   "lastOpenFiles": [
-    "image.png",
-    "GDC-Lab-Guide/LabGuide.md"
+    "README.md",
+    "Template.md",
+    "repos.md",
+    "repo-git.md",
+    "assets/README/file-20251031161647806.png",
+    "assets/README/file-20251031173745795.png",
+    "assets/README/file-20251031173343313.png",
+    "assets/README/file-20251101110359833.png",
+    "assets/README/file-20251031173706641.png",
+    "assets/README/file-20251031160555170.png",
+    "assets/README/file-20251031173546140.png",
+    "assets/README/file-20251101121137560.png",
+    "assets/README/file-20251101121111473.png",
+    "assets/README/file-20251101110747436.png",
+    "assets/README",
+    "scripts/zshrc-addons.md",
+    "scripts/tab-complete.md",
+    "scripts/obsidian_vaults().md",
+    "scripts/obsidian_tmp().md",
+    "scripts/obsidian_cleanup_pwd().md",
+    "scripts/obsidian_cleanup_id().md",
+    "scripts/obsidian_cleanup_alltmp().md",
+    "scripts/obsidian().md",
+    "scripts",
+    "zshrc-addons.md",
+    "obsidian().md",
+    "obsidian_tmp().md",
+    "obsidian_cleanup_alltmp().md",
+    "tab-complete.md",
+    "obsidian_cleanup_pwd().md",
+    "obsidian_cleanup_id().md",
+    "obsidian_vaults().md",
+    "Template.ipynb",
+    "template/bin/jupyter-notebook",
+    "template/share/jupyter/labextensions/@jupyter-notebook/lab-extension/schemas/@jupyter-notebook/lab-extension/launch-tree.json",
+    "template/share/jupyter/labextensions/@jupyter-notebook/lab-extension/schemas/@jupyter-notebook/lab-extension/package.json.orig",
+    "template/share/jupyter/labextensions/@jupyter-notebook/lab-extension/schemas/@jupyter-notebook/lab-extension/interface-switcher.json",
+    "template/share/jupyter/labextensions/@jupyter-notebook/lab-extension/schemas/@jupyter-notebook/lab-extension",
+    "template/share/jupyter/labextensions/@jupyter-notebook/lab-extension/static/third-party-licenses.json",
+    "template/share/jupyter/labextensions/@jupyter-notebook/lab-extension/static/style.js",
+    "template/lib/python3.12/site-packages/numpy/random/LICENSE.md",
+    "template/lib/python3.12/site-packages/jupyter_server/i18n/README.md",
+    "template/lib/python3.12/site-packages/nbconvert/templates/skeleton/README.md",
+    "template/lib/python3.12/site-packages/nbconvert/templates/README.md",
+    "template/lib/python3.12/site-packages/httpx-0.28.1.dist-info/licenses/LICENSE.md",
+    "template/lib/python3.12/site-packages/mdit_py_plugins/texmath/README.md"
   ]
 }
